@@ -251,7 +251,7 @@ MonoBehaviour:
   minHeight: 0
   noise: 150
   sizeOfLandscape: 510
-  iterations: 5
+  iterations: 6
 --- !u!1 &1959472829
 GameObject:
   m_ObjectHideFlags: 0
