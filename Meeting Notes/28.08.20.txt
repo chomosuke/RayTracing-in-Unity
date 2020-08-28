@@ -1,0 +1,35 @@
+MINUTES 28/08/2020
+
+1. Separating sections into tasks:
+
+camera motion
+1, 2 - camera movement
+3, 4 - camera bounds
+
+modelling of fractal landscape
+juwey(?): diamond square algorithm
+
+surface properties
+2, 3 - phong illumination model
+richard(?): 5 - water -> 2 shaders: water & landscape?
+
+extras
+- readme file
+
+
+2. notify group of every commit so there are no clashes/inconsistencies, write commit msgs.
+
+3. surface properties > camera motion
+
+3. weekly meetings with everyone contributing to code. start of each meeting, show off what you have done.
+
+4. started prelim work on diamond square
+
+
+
+tasks to do:
+jasper - camera motion
+richard, juwey, jasmine - diamond square
+
+
+
