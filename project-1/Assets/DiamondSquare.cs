@@ -18,7 +18,7 @@ public class DiamondSquare : MonoBehaviour
         landScapeMesh = this.gameObject.AddComponent<MeshFilter>();
         landScapeMesh.mesh = this.CreateLandScapeMesh(iterations);
         MeshRenderer renderer = this.gameObject.AddComponent<MeshRenderer>();
-        renderer.material.shader = Shader.Find("Unlit/CubeShader");
+        renderer.material.shader = Shader.Find("Unlit/PhongShader");
     }
 
     // Update is called once per frame
@@ -33,15 +33,58 @@ public class DiamondSquare : MonoBehaviour
         Mesh m = new Mesh();
         m.name = "Landscape";
 
-        m.vertices = GenerateVectors(iterations);
-        Color[] colors =  new Color[m.vertices.Length];
+        Vector3[] vertices = GenerateVectors(iterations);
+        m.vertices = vertices;
+        Color[] colors =  new Color[vertices.Length];
         for (int i = 0; i < colors.Length; i++)
         {
+            // colors[i] = new Color(RandomRange(0f, 1f), RandomRange(0f, 1f),RandomRange(0f, 1f));
             colors[i] = Color.blue;
         }
         m.colors = colors;
-        m.SetTriangles(GenerateTriangles(m.vertices),0);
+        int[] triangles = GenerateTriangles(vertices);
+        m.triangles = triangles;
+        m.normals = GenerateNormals(triangles, vertices);
         return m;
+    }
+
+    private Vector3[] GenerateNormals(int[] triangles, Vector3[] vertices) {
+        // the normal for each vertex is the average of all the normal of triangles that shares that vertex
+        // so naturally we would want to figure out how many triangles shares a vertex
+        // but turns out that actually doesn't matter here because
+        // our normal is directional so as long as we don't have different absolute value for each triangle's normal
+        // and we normalize (change the absolute value for a vector to 1) all vertex normals in the end
+        // they should average out just fine
+        // so what i'm going to do here is:
+        // calculate each triangle's normal
+        // normalize them
+        // add them to each three corrisponding vertexes of each triangle
+        // and normalize the normals for vertexes in the end
+
+        Vector3[] normals = new Vector3[vertices.Length];
+        for (int i = 0; i < normals.Length; i++) {
+            // initialize normals to 0
+            normals[i] = new Vector3(0f, 0f, 0f);
+        }
+        for (int i = 0; i < triangles.Length; i+=3) {
+            // calculate this triangle's normal
+            // by cross producting two edges of the triangle
+            Vector3 vertex1 = vertices[triangles[i]];
+            Vector3 vertex2 = vertices[triangles[i+1]];
+            Vector3 vertex3 = vertices[triangles[i+2]];
+            Vector3 u = vertex1 - vertex2;
+            Vector3 v = vertex1 - vertex3;
+            Vector3 thisNormal = Vector3.Cross(u, v).normalized;
+            normals[triangles[i]] += thisNormal;
+            normals[triangles[i+1]] += thisNormal;
+            normals[triangles[i+2]] += thisNormal;
+        }
+        // normalize all vectors
+        for (int i = 0; i < normals.Length; i++) {
+            normals[i].Normalize();
+        }
+        
+        return normals;
     }
 
     private Vector3[] GenerateVectors(int iterations){
