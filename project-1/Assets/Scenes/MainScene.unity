@@ -279,7 +279,10 @@ MonoBehaviour:
   maxSeedHeight: 2
   noise: 5
   sizeOfLandscape: 10
-  iterations: 6
+  iterations: 8
+  n: 3
+  specularFraction: 0.1
+  ambient: 0.1
 --- !u!1 &1959472829
 GameObject:
   m_ObjectHideFlags: 0

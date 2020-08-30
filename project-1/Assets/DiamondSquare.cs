@@ -8,21 +8,33 @@ public class DiamondSquare : MonoBehaviour
     public float noise;
     public float sizeOfLandscape;
     public int iterations;
-    private MeshFilter landScapeMesh;
+    public float n;
+
+    [Range(0.0f, 1.0f)]
+    public float specularFraction;
     
+    [Range(0.0f, 1.0f)]
+    public float ambient;
+    private MeshFilter landScapeMesh;
+    private MeshRenderer renderer;
     // Start is called before the first frame update
     void Start()
     {
-        random = new System.Random((int)(Time.realtimeSinceStartup*1000));
+        random = new System.Random((int)(Time.realtimeSinceStartup));
         landScapeMesh = this.gameObject.AddComponent<MeshFilter>();
-        landScapeMesh.mesh = this.CreateLandScapeMesh(iterations);
-        MeshRenderer renderer = this.gameObject.AddComponent<MeshRenderer>();
+        landScapeMesh.mesh = CreateLandScapeMesh(iterations);
+        renderer = this.gameObject.AddComponent<MeshRenderer>();
         renderer.material.shader = Shader.Find("Unlit/PhongShader");
     }
 
     // Update is called once per frame
     void Update()
     {
+        renderer.material.SetVector("cameraTransform", 
+            Camera.main.transform.position - gameObject.transform.position);
+        renderer.material.SetFloat("n", n);
+        renderer.material.SetFloat("ambient", ambient);
+        renderer.material.SetFloat("specularFraction", specularFraction);
         if (Input.GetKeyDown(KeyCode.Space)){
             landScapeMesh.mesh = this.CreateLandScapeMesh(iterations);
         }
