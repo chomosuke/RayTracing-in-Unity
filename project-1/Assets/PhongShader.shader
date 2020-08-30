@@ -40,7 +40,7 @@ Shader "Unlit/PhongShader"
 			fixed4 frag(vertOut v) : SV_Target
 			{
 				float ambient = 0.1f;
-				float3 lightDirection = { 0.6f, 0.6f, 0.6f };
+				float3 lightDirection = { 1.0, 1.0, 0.0 };
 
 				// dot product will give ||a|| ||b|| cos(theta)
 				// as both a and b are unit vector (i normalized them)

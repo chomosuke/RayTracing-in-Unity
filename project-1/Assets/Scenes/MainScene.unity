@@ -276,9 +276,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bff0f1636a83a946af31a848d827b94, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHeight: 10
-  minHeight: 0
-  noise: 10
+  maxSeedHeight: 2
+  noise: 5
   sizeOfLandscape: 10
   iterations: 6
 --- !u!1 &1959472829

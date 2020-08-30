@@ -4,8 +4,7 @@ using UnityEngine;
 using System;
 public class DiamondSquare : MonoBehaviour
 {
-    public float maxHeight;
-    public float minHeight;
+    public float maxSeedHeight; 
     public float noise;
     public float sizeOfLandscape;
     public int iterations;
@@ -112,10 +111,10 @@ public class DiamondSquare : MonoBehaviour
         }
 
         // Create 4 corners
-        grid[0][0] = RandomRange(0, maxHeight);
-        grid[0][length-1] = RandomRange(0, maxHeight);
-        grid[length-1][0] =  RandomRange(0, maxHeight);
-        grid[length-1][length-1] = RandomRange(0, maxHeight);
+        grid[0][0] = RandomRange(0, maxSeedHeight);
+        grid[0][length-1] = RandomRange(0, maxSeedHeight);
+        grid[length-1][0] =  RandomRange(0, maxSeedHeight);
+        grid[length-1][length-1] = RandomRange(0, maxSeedHeight);
 
         int currentLength = length-1;
         float randomness = noise;
