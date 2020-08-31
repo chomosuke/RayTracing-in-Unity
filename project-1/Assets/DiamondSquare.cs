@@ -41,6 +41,10 @@ public class DiamondSquare : MonoBehaviour
     private Mesh CreateLandScapeMesh(int iterations){
         Mesh m = new Mesh();
         m.name = "Landscape";
+        
+        // this will allow more than 65k vertices (up to 2^32)
+        // that means that iteration can go higher than 8
+        m.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
 
         Vector3[] vertices = GenerateVectors(iterations);
         m.vertices = vertices;
@@ -140,7 +144,6 @@ public class DiamondSquare : MonoBehaviour
     private float[][] GenerateHeightMap(int iterations){
 
         int length = GenerateLengths(iterations);
-        Debug.Log(""+length);
         float[][] grid = new float[length][];
         for (int i = 0; i < grid.Length; i++)
         {
