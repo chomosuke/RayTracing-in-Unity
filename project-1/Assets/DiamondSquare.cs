@@ -47,16 +47,39 @@ public class DiamondSquare : MonoBehaviour
         Vector3[] vertices = GenerateVectors(iterations);
         m.vertices = vertices;
         Color[] colors =  new Color[vertices.Length];
+        float[] maxMinY = getMaxMinY(vertices);
+        float maxMinYDiff = maxMinY[0] - maxMinY[1];
+        float minY = maxMinY[1];
         for (int i = 0; i < colors.Length; i++)
         {
-            // colors[i] = new Color(RandomRange(0f, 1f), RandomRange(0f, 1f),RandomRange(0f, 1f));
-            colors[i] = Color.blue;
+            if (vertices[i].y > maxMinYDiff / 4 * 3 + minY) {
+                colors[i] = Color.white;
+            } else if (vertices[i].y > maxMinYDiff / 2 + minY) {
+                colors[i] = new Color(135f/255,182f/255,124f/255);
+            } else {
+                colors[i] = new Color(231f/255,196f/255,150f/255);
+            }
+            
         }
         m.colors = colors;
         int[] triangles = GenerateTriangles(vertices);
         m.triangles = triangles;
         m.normals = GenerateNormals(triangles, vertices);
         return m;
+    }
+
+    private float[] getMaxMinY(Vector3[] vertices) {
+        float maxY = vertices[0].y;
+        float minY = vertices[0].y;
+        foreach (Vector3 vertex in vertices) {
+            if (vertex.y > maxY) {
+                maxY = vertex.y;
+            }
+            if (vertex.y < minY) {
+                minY = vertex.y;
+            }
+        }
+        return new float[] {maxY, minY};
     }
 
     private Vector3[] GenerateNormals(int[] triangles, Vector3[] vertices) {
