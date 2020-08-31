@@ -4,26 +4,37 @@ using UnityEngine;
 using System;
 public class DiamondSquare : MonoBehaviour
 {
-    public float maxHeight;
-    public float minHeight;
+    public float maxSeedHeight; 
     public float noise;
     public float sizeOfLandscape;
     public int iterations;
-    private MeshFilter landScapeMesh;
+    public float n;
+
+    [Range(0.0f, 1.0f)]
+    public float specularFraction;
     
+    [Range(0.0f, 1.0f)]
+    public float ambient;
+    private MeshFilter landScapeMesh;
+    private MeshRenderer renderer;
     // Start is called before the first frame update
     void Start()
     {
-        random = new System.Random((int)(Time.realtimeSinceStartup*1000));
+        random = new System.Random((int)(Time.realtimeSinceStartup));
         landScapeMesh = this.gameObject.AddComponent<MeshFilter>();
-        landScapeMesh.mesh = this.CreateLandScapeMesh(iterations);
-        MeshRenderer renderer = this.gameObject.AddComponent<MeshRenderer>();
-        renderer.material.shader = Shader.Find("Unlit/CubeShader");
+        landScapeMesh.mesh = CreateLandScapeMesh(iterations);
+        renderer = this.gameObject.AddComponent<MeshRenderer>();
+        renderer.material.shader = Shader.Find("Unlit/PhongShader");
     }
 
     // Update is called once per frame
     void Update()
     {
+        renderer.material.SetVector("cameraTransform", 
+            Camera.main.transform.position - gameObject.transform.position);
+        renderer.material.SetFloat("n", n);
+        renderer.material.SetFloat("ambient", ambient);
+        renderer.material.SetFloat("specularFraction", specularFraction);
         if (Input.GetKeyDown(KeyCode.Space)){
             landScapeMesh.mesh = this.CreateLandScapeMesh(iterations);
         }
@@ -33,15 +44,83 @@ public class DiamondSquare : MonoBehaviour
         Mesh m = new Mesh();
         m.name = "Landscape";
 
-        m.vertices = GenerateVectors(iterations);
-        Color[] colors =  new Color[m.vertices.Length];
+        Vector3[] vertices = GenerateVectors(iterations);
+        m.vertices = vertices;
+        Color[] colors =  new Color[vertices.Length];
+        float[] maxMinY = getMaxMinY(vertices);
+        float maxMinYDiff = maxMinY[0] - maxMinY[1];
+        float minY = maxMinY[1];
         for (int i = 0; i < colors.Length; i++)
         {
-            colors[i] = Color.blue;
+            if (vertices[i].y > maxMinYDiff / 4 * 3 + minY) {
+                colors[i] = Color.white;
+            } else if (vertices[i].y > maxMinYDiff / 2 + minY) {
+                colors[i] = new Color(135f/255,182f/255,124f/255);
+            } else {
+                colors[i] = new Color(231f/255,196f/255,150f/255);
+            }
+            
         }
         m.colors = colors;
-        m.SetTriangles(GenerateTriangles(m.vertices),0);
+        int[] triangles = GenerateTriangles(vertices);
+        m.triangles = triangles;
+        // m.normals = GenerateNormals(triangles, vertices);
+        m.RecalculateNormals();
         return m;
+    }
+
+    private float[] getMaxMinY(Vector3[] vertices) {
+        float maxY = vertices[0].y;
+        float minY = vertices[0].y;
+        foreach (Vector3 vertex in vertices) {
+            if (vertex.y > maxY) {
+                maxY = vertex.y;
+            }
+            if (vertex.y < minY) {
+                minY = vertex.y;
+            }
+        }
+        return new float[] {maxY, minY};
+    }
+
+    // this function was written before i know RecalculateNormals() exists
+    private Vector3[] GenerateNormals(int[] triangles, Vector3[] vertices) {
+        // the normal for each vertex is the average of all the normal of triangles that shares that vertex
+        // so naturally we would want to figure out how many triangles shares a vertex
+        // but turns out that actually doesn't matter here because
+        // our normal is directional so as long as we don't have different absolute value for each triangle's normal
+        // and we normalize (change the absolute value for a vector to 1) all vertex normals in the end
+        // they should average out just fine
+        // so what i'm going to do here is:
+        // calculate each triangle's normal
+        // normalize them
+        // add them to each three corrisponding vertexes of each triangle
+        // and normalize the normals for vertexes in the end
+
+        Vector3[] normals = new Vector3[vertices.Length];
+        for (int i = 0; i < normals.Length; i++) {
+            // initialize normals to 0
+            normals[i] = new Vector3(0f, 0f, 0f);
+        }
+        for (int i = 0; i < triangles.Length; i+=3) {
+            // calculate this triangle's normal
+            // by cross producting two edges of the triangle
+            Vector3 vertex1 = vertices[triangles[i]];
+            Vector3 vertex2 = vertices[triangles[i+1]];
+            Vector3 vertex3 = vertices[triangles[i+2]];
+            Vector3 u = vertex1 - vertex2;
+            Vector3 v = vertex1 - vertex3;
+            Vector3 thisNormal = Vector3.Cross(u, v).normalized;
+            normals[triangles[i]] += thisNormal;
+            normals[triangles[i+1]] += thisNormal;
+            normals[triangles[i+2]] += thisNormal;
+        }
+        // normalize all vectors
+        for (int i = 0; i < normals.Length; i++) {
+            normals[i].Normalize();
+        }
+        
+        return normals;
     }
 
     private Vector3[] GenerateVectors(int iterations){
@@ -69,10 +148,10 @@ public class DiamondSquare : MonoBehaviour
         }
 
         // Create 4 corners
-        grid[0][0] = RandomRange(0, maxHeight);
-        grid[0][length-1] = RandomRange(0, maxHeight);
-        grid[length-1][0] =  RandomRange(0, maxHeight);
-        grid[length-1][length-1] = RandomRange(0, maxHeight);
+        grid[0][0] = RandomRange(0, maxSeedHeight);
+        grid[0][length-1] = RandomRange(0, maxSeedHeight);
+        grid[length-1][0] =  RandomRange(0, maxSeedHeight);
+        grid[length-1][length-1] = RandomRange(0, maxSeedHeight);
 
         int currentLength = length-1;
         float randomness = noise;

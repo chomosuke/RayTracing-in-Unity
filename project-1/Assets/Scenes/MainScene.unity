@@ -215,11 +215,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 903493927}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b6051a6e1a1d4764abf16997ef44bb08, type: 3}
+  m_Script: {fileID: 11500000, guid: 44a775484e248e8408565af497164b09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cameraSpeed: 100
-  cameraDirection: {fileID: 903493932}
+  sensitivity: 2
+  camRotation: {x: 0, y: 0, z: 0, w: 0}
 --- !u!114 &903493932
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -229,11 +229,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 903493927}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c514bad217a6fa24e89ce725f84e0bfc, type: 3}
+  m_Script: {fileID: 11500000, guid: 07e3e7cc0603c8844bb18506e35a53be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sensitivity: 2
-  camRotation: {x: 0, y: 0, z: 0, w: 0}
+  cameraSpeed: 5
 --- !u!1 &1658723779
 GameObject:
   m_ObjectHideFlags: 0
@@ -277,11 +276,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bff0f1636a83a946af31a848d827b94, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHeight: 255
-  minHeight: 0
-  noise: 150
-  sizeOfLandscape: 510
-  iterations: 6
+  maxSeedHeight: 2
+  noise: 5
+  sizeOfLandscape: 10
+  iterations: 8
+  n: 1.5
+  specularFraction: 0.11
+  ambient: 0.34
 --- !u!1 &1959472829
 GameObject:
   m_ObjectHideFlags: 0
