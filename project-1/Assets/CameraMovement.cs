@@ -14,16 +14,16 @@ public class CameraMovement : MonoBehaviour
     {
     
         if (Input.GetKey(KeyCode.D)) {
-            this.transform.localPosition += cameraDirection.transform.right * cameraSpeed * Time.deltaTime;
+            cameraDirection.transform.position += cameraDirection.transform.right * cameraSpeed * Time.deltaTime;
         }
         if (Input.GetKey(KeyCode.A)) {
-            this.transform.localPosition += cameraDirection.transform.right * -1 * cameraSpeed * Time.deltaTime;
+            cameraDirection.transform.position += cameraDirection.transform.right * -1 * cameraSpeed * Time.deltaTime;
         }
         if (Input.GetKey(KeyCode.W)) {
-            this.transform.localPosition += cameraDirection.transform.forward * cameraSpeed * Time.deltaTime;
+            cameraDirection.transform.position += cameraDirection.transform.forward * cameraSpeed * Time.deltaTime;
         }
         if (Input.GetKey(KeyCode.S)) {
-            this.transform.localPosition += cameraDirection.transform.forward * -1 * cameraSpeed * Time.deltaTime;
+            cameraDirection.transform.position += cameraDirection.transform.forward * -1 * cameraSpeed * Time.deltaTime;
         }
 
     }
