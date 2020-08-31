@@ -30,8 +30,6 @@ public class DiamondSquare : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        renderer.material.SetVector("cameraTransform", 
-            Camera.main.transform.position - gameObject.transform.position);
         renderer.material.SetFloat("n", n);
         renderer.material.SetFloat("ambient", ambient);
         renderer.material.SetFloat("specularFraction", specularFraction);
@@ -141,6 +139,7 @@ public class DiamondSquare : MonoBehaviour
     private float[][] GenerateHeightMap(int iterations){
 
         int length = GenerateLengths(iterations);
+        Debug.Log(""+length);
         float[][] grid = new float[length][];
         for (int i = 0; i < grid.Length; i++)
         {
@@ -239,10 +238,7 @@ public class DiamondSquare : MonoBehaviour
     }
 
     private int GenerateLengths(int iterations){
-        if (iterations == 0){
-            return 2;
-        }
-        return 2*GenerateLengths(iterations-1)-1;
+        return (int) Math.Pow(2, iterations) + 1;
     }
 
     private System.Random random;

@@ -12,7 +12,6 @@ Shader "Unlit/PhongShader"
 
 			#include "UnityCG.cginc"
 
-			uniform float3 cameraTransform;
 			uniform float n;
 			uniform float ambient;
 			uniform float specularFraction;
@@ -48,6 +47,7 @@ Shader "Unlit/PhongShader"
 			{
 				// according to documentation Directional lights: (world space direction, 0). Other lights: (world space position, 1).
 				float3 lightDirection = _WorldSpaceLightPos0;
+				float3 cameraTransform = mul(unity_WorldToObject, _WorldSpaceCameraPos);
 
 				// dot product will give ||a|| ||b|| cos(theta)
 				// as both a and b are unit vector (i normalized them)
