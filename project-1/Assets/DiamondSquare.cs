@@ -54,15 +54,7 @@ public class DiamondSquare : MonoBehaviour
         float minY = maxMinY[1];
         for (int i = 0; i < colors.Length; i++)
         {
-            /**if (vertices[i].y > maxMinYDiff / 4 * 3 + minY) {
-                colors[i] = Color.white;
-            } else if (vertices[i].y > maxMinYDiff / 2 + minY) {
-                colors[i] = new Color(135f/255,182f/255,124f/255);
-            } else {
-                colors[i] = new Color(231f/255,196f/255,150f/255);
-            }**/
             colors[i] = this.GetColor(vertices[i].y,  maxMinYDiff);
-            
         }
         m.colors = colors;
         int[] triangles = GenerateTriangles(vertices);
