@@ -15,6 +15,7 @@ public class DiamondSquare : MonoBehaviour
     
     [Range(0.0f, 1.0f)]
     public float ambient;
+    public Texture2D _BumpMap;
     private MeshFilter landScapeMesh;
     private MeshRenderer renderer;
     // Start is called before the first frame update
@@ -25,6 +26,7 @@ public class DiamondSquare : MonoBehaviour
         landScapeMesh.mesh = CreateLandScapeMesh(iterations);
         renderer = this.gameObject.AddComponent<MeshRenderer>();
         renderer.material.shader = Shader.Find("Unlit/PhongShader");
+        //renderer.material.SetTexture("_BumpMap", _BumpMap);
     }
 
     // Update is called once per frame
@@ -54,7 +56,7 @@ public class DiamondSquare : MonoBehaviour
         float minY = maxMinY[1];
         for (int i = 0; i < colors.Length; i++)
         {
-            colors[i] = this.GetColor(vertices[i].y,  maxMinYDiff);
+            colors[i] = this.GetColor(vertices[i].y, maxMinY);
         }
         m.colors = colors;
         int[] triangles = GenerateTriangles(vertices);
@@ -233,26 +235,31 @@ public class DiamondSquare : MonoBehaviour
         return triangles;
     }
 
-    private Color GetColor(float height, float maxMinYDiff){
+    private Color GetColor(float height, float[] maxMinY){
         Gradient gradient = new Gradient();
-        GradientAlphaKey[] gradientAlphaKeys = new GradientAlphaKey[3];
-        GradientColorKey[] gradientColorKeys = new GradientColorKey[3];
+        GradientAlphaKey[] gradientAlphaKeys = new GradientAlphaKey[4];
+        GradientColorKey[] gradientColorKeys = new GradientColorKey[4];
 
-        float heightToTime = height/maxMinYDiff;
+        float maxMinYDiff = maxMinY[0] - maxMinY[1];
+        float heightToTime = (height - maxMinY[1])/maxMinYDiff;
 
         gradientColorKeys[0].color = new Color(231f/255,196f/255,150f/255);
-        gradientColorKeys[0].time = 0f;
+        gradientColorKeys[0].time = 0.41f;
         gradientColorKeys[1].color = new Color(135f/255,182f/255,124f/255);
-        gradientColorKeys[1].time = 0.39f;
-        gradientColorKeys[2].color = Color.white;
-        gradientColorKeys[2].time = 0.5f;
+        gradientColorKeys[1].time = 0.51f;
+        gradientColorKeys[2].color = new Color(135f/255,182f/255,124f/255);
+        gradientColorKeys[2].time = 0.61f;
+        gradientColorKeys[3].color = Color.white;
+        gradientColorKeys[3].time = 0.85f;
 
         gradientAlphaKeys[0].alpha = 0f;
-        gradientAlphaKeys[0].time = 0f;
+        gradientAlphaKeys[0].time = 0.41f;
         gradientAlphaKeys[1].alpha = 0f;
-        gradientAlphaKeys[1].time = 0.39f;
+        gradientAlphaKeys[1].time = 0.51f;
         gradientAlphaKeys[2].alpha = 0f;
-        gradientAlphaKeys[2].time = 0.5f;
+        gradientAlphaKeys[2].time = 0.61f;
+        gradientAlphaKeys[3].alpha = 0f;
+        gradientAlphaKeys[3].time = 0.85f;
 
         gradient.SetKeys(gradientColorKeys, gradientAlphaKeys);
         return gradient.Evaluate(heightToTime);
