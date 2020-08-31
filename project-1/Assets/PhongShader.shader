@@ -2,6 +2,10 @@
 
 Shader "Unlit/PhongShader"
 {
+	Properties
+	{
+		_BumpMap ("Bumpmap", 2D) = "" {}
+	}
 	SubShader
 	{
 		Pass
@@ -12,6 +16,8 @@ Shader "Unlit/PhongShader"
 
 			#include "UnityCG.cginc"
 
+			uniform sampler2D _BumpMap;
+
 			uniform float n;
 			uniform float ambient;
 			uniform float specularFraction;
@@ -21,6 +27,11 @@ Shader "Unlit/PhongShader"
 				float4 vertex : POSITION;
 				float4 color : COLOR0;
 				float3 normal : NORMAL;
+				float2 uv : TEXCOORD0;
+				half3 tspace0 : TEXCOORD1;
+                half3 tspace1 : TEXCOORD2;
+                half3 tspace2 : TEXCOORD3;
+				float4 tangent : TANGENT;
 			};
 
 			struct vertOut
@@ -29,6 +40,11 @@ Shader "Unlit/PhongShader"
 				float4 color : COLOR0;
 				float3 normal : NORMAL;
 				float3 position : POSITION_IN_WORLD_SPACE;
+				float2 uv : TEXCOORD0;
+				half3 tspace0 : TEXCOORD1;
+                half3 tspace1 : TEXCOORD2;
+                half3 tspace2 : TEXCOORD3;
+				float4 tangent : TANGENT;
 			};
 
 			// Implementation of the vertex shader
@@ -39,6 +55,16 @@ Shader "Unlit/PhongShader"
 				o.color = v.color;
 				o.normal = v.normal;
 				o.position = v.vertex;
+				
+				o.uv = v.uv;
+				o.tangent = v.tangent;
+				half3 wNormal = UnityObjectToWorldNormal(o.normal);
+                half3 wTangent = UnityObjectToWorldDir(v.tangent.xyz);
+                half tangentSign = v.tangent.w * unity_WorldTransformParams.w;
+                half3 wBitangent = cross(wNormal, wTangent) * tangentSign;
+                o.tspace0 = half3(wTangent.x, wBitangent.x, wNormal.x);
+                o.tspace1 = half3(wTangent.y, wBitangent.y, wNormal.y);
+                o.tspace2 = half3(wTangent.z, wBitangent.z, wNormal.z);
 				return o;
 			}
 			
@@ -50,6 +76,15 @@ Shader "Unlit/PhongShader"
 				
 				float3 cameraTransform = mul(unity_WorldToObject, _WorldSpaceCameraPos);
 
+				// sample the normal map, and decode from the Unity encoding
+                half3 tnormal = UnpackNormal(tex2D(_BumpMap, v.uv));
+				half3 worldNormal;
+                worldNormal.x = dot(v.tspace0, tnormal);
+                worldNormal.y = dot(v.tspace1, tnormal);
+                worldNormal.z = dot(v.tspace2, tnormal);
+
+				v.normal = worldNormal;
+
 				// dot product will give ||a|| ||b|| cos(theta)
 				// as both a and b are unit vector (i normalized them)
 				// dot(...) will return cos(theta)
@@ -60,7 +95,7 @@ Shader "Unlit/PhongShader"
 				diffuse *= 1.0-ambient; // this is so that diffuse + ambient <= 1
 
 				float3 viewDir = v.position - cameraTransform;
-				float3 reflectionDir = reflect(lightDirection, -v.normal); // this will be normalized
+				float3 reflectionDir = reflect(lightDirection, v.normal); // this will be normalized
 				
 				float specular = dot(normalize(viewDir), normalize(reflectionDir));
 				if (specular <= 0.0) {

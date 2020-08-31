@@ -283,6 +283,7 @@ MonoBehaviour:
   n: 1.5
   specularFraction: 0.11
   ambient: 0.34
+  _BumpMap: {fileID: 2800000, guid: e5895469fa6440e4a876bf0672599e59, type: 3}
 --- !u!1 &1959472829
 GameObject:
   m_ObjectHideFlags: 0

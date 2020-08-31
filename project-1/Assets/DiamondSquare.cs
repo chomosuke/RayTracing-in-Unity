@@ -26,7 +26,7 @@ public class DiamondSquare : MonoBehaviour
         landScapeMesh.mesh = CreateLandScapeMesh(iterations);
         renderer = this.gameObject.AddComponent<MeshRenderer>();
         renderer.material.shader = Shader.Find("Unlit/PhongShader");
-        //renderer.material.SetTexture("_BumpMap", _BumpMap);
+        renderer.material.SetTexture("_BumpMap", _BumpMap);
     }
 
     // Update is called once per frame
@@ -37,6 +37,7 @@ public class DiamondSquare : MonoBehaviour
         renderer.material.SetFloat("specularFraction", specularFraction);
         if (Input.GetKeyDown(KeyCode.Space)){
             landScapeMesh.mesh = this.CreateLandScapeMesh(iterations);
+            renderer.material.SetTexture("_BumpMap", _BumpMap);
         }
     }
 
@@ -61,6 +62,13 @@ public class DiamondSquare : MonoBehaviour
         m.colors = colors;
         int[] triangles = GenerateTriangles(vertices);
         m.triangles = triangles;
+
+        Vector2[] uvs = new Vector2[vertices.Length];
+        for (int i = 0; i < uvs.Length; i++)
+        {
+            uvs[i] = new Vector2(vertices[i].x, vertices[i].z);
+        }
+        m.uv = uvs;
         // m.normals = GenerateNormals(triangles, vertices);
         m.RecalculateNormals();
         return m;
@@ -273,4 +281,5 @@ public class DiamondSquare : MonoBehaviour
     private float RandomRange(float minimum, float maximum){
         return minimum + (float) random.NextDouble() * (maximum - minimum);
     }
+
 }
