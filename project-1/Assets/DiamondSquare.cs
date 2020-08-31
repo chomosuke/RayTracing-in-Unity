@@ -64,7 +64,8 @@ public class DiamondSquare : MonoBehaviour
         m.colors = colors;
         int[] triangles = GenerateTriangles(vertices);
         m.triangles = triangles;
-        m.normals = GenerateNormals(triangles, vertices);
+        // m.normals = GenerateNormals(triangles, vertices);
+        m.RecalculateNormals();
         return m;
     }
 
@@ -82,6 +83,7 @@ public class DiamondSquare : MonoBehaviour
         return new float[] {maxY, minY};
     }
 
+    // this function was written before i know RecalculateNormals() exists
     private Vector3[] GenerateNormals(int[] triangles, Vector3[] vertices) {
         // the normal for each vertex is the average of all the normal of triangles that shares that vertex
         // so naturally we would want to figure out how many triangles shares a vertex
