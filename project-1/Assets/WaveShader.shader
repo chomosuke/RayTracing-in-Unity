@@ -19,7 +19,7 @@ Shader "Unlit/WaveShader"
 
 			uniform sampler2D_float landscapeVertices;
 			uniform sampler2D_float landscapeNormals;
-			uniform sampler2D_float landscapeColors;
+			uniform sampler2D landscapeColors;
 			uniform int landscapeSize;
 			// uniform float planeSize; 
 			// uniform int numOfVerticesOnPlaneEdge;
@@ -56,7 +56,7 @@ Shader "Unlit/WaveShader"
 				float3 position : POSITION_IN_WORLD_SPACE;
 			};
 
-			float getDisplacement(float3 v);
+			float getY(float3 v);
 			float3 getNormal(float3 v);
 
 			vertOutLandscape landscapeVert(vertInLandscape v);
@@ -65,7 +65,7 @@ Shader "Unlit/WaveShader"
 			// Implementation of the vertex shader
 			vertOut vert(vertIn v)
 			{
-				v.vertex.y = getDisplacement(v.vertex.xyz);
+				v.vertex.y = getY(v.vertex.xyz);
 
 				vertOut o;
 				o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
@@ -73,9 +73,10 @@ Shader "Unlit/WaveShader"
 				return o;
 			}
 			// i hope this place holder fuction get replaced by something more realistic by someone who's not me
-			float getDisplacement(float3 v) { // displacement can only be in the y direction and 
+			float getY(float3 v) { // displacement can only be in the y direction and 
 			// must be directly assigned to v.vertex.y or else everything will break;
-			// damn too much coupling between function for this thing.
+			// damn too much coupling between functions for this thing.
+			// v.y should not be in this function
 				return sin(v.x*50 + _Time.y)/20;
 			}
 
@@ -87,7 +88,7 @@ Shader "Unlit/WaveShader"
 			float3 getNormal(float3 v) { 
 				float L = 0.01; 
 				// num too small and it gets cut off when added to the big float v.x and v.z
-				// cause remember float only have about 8 digit of precision
+				// cause remember float only have about 8 digits of precision
 
 				int length = 4;
 				float3 vs[4] = {
@@ -98,7 +99,7 @@ Shader "Unlit/WaveShader"
 				};
 				for (int i = 0; i < length; i++) {
 					// apply displacment
-					vs[i].y = getDisplacement(vs[i]);
+					vs[i].y = getY(vs[i]);
 				}
 				float3 normal = {0, 0, 0};
 				for (int i = 0; i < length; i++) {
@@ -109,9 +110,17 @@ Shader "Unlit/WaveShader"
 			
 			
 			// Implementation of the fragment shader
-			fixed4 frag(vertOut v) : SV_Target {
-				float3 normal = getNormal(v.position); // per pixel normal
+			// fixed4 frag(vertOut v) : SV_Target {
 				
+			// 	// per pixel normal
+			// 	float3 normal = getNormal(v.position);
+				
+
+			// }
+
+			// this fragment shader is to test the correctness of sampler2d_float passed in
+			fixed4 frag(vertOut v) : SV_Target {
+				return tex2D(landscapeColors, v.position.xz/10);
 			}
 
 			// // this fragment shader test the getNormal function

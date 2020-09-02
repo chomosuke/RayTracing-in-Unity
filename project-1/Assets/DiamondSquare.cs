@@ -9,6 +9,7 @@ public class DiamondSquare : MonoBehaviour
     public float sizeOfLandscape;
     public int iterations;
     public float n;
+    public GameObject water;
 
     [Range(0.0f, 1.0f)]
     public float specularFraction;
@@ -24,6 +25,7 @@ public class DiamondSquare : MonoBehaviour
         random = new System.Random((int)(Time.realtimeSinceStartup));
         landScapeMesh = this.gameObject.AddComponent<MeshFilter>();
         landScapeMesh.mesh = CreateLandScapeMesh(iterations);
+        water.GetComponent<WaterReflection>().setLandscapeMesh(landScapeMesh.mesh);
         renderer = this.gameObject.AddComponent<MeshRenderer>();
         renderer.material.shader = Shader.Find("Unlit/PhongShader");
         //renderer.material.SetTexture("_BumpMap", _BumpMap);
@@ -37,11 +39,8 @@ public class DiamondSquare : MonoBehaviour
         renderer.material.SetFloat("specularFraction", specularFraction);
         if (Input.GetKeyDown(KeyCode.Space)){
             landScapeMesh.mesh = this.CreateLandScapeMesh(iterations);
+            water.GetComponent<WaterReflection>().setLandscapeMesh(landScapeMesh.mesh);
         }
-    }
-
-    public Mesh GetMesh() {
-        return landScapeMesh.mesh;
     }
 
     private Mesh CreateLandScapeMesh(int iterations){
@@ -256,13 +255,13 @@ public class DiamondSquare : MonoBehaviour
         gradientColorKeys[3].color = Color.white;
         gradientColorKeys[3].time = 0.85f;
 
-        gradientAlphaKeys[0].alpha = 0f;
+        gradientAlphaKeys[0].alpha = 1f;
         gradientAlphaKeys[0].time = 0.41f;
-        gradientAlphaKeys[1].alpha = 0f;
+        gradientAlphaKeys[1].alpha = 1f;
         gradientAlphaKeys[1].time = 0.51f;
-        gradientAlphaKeys[2].alpha = 0f;
+        gradientAlphaKeys[2].alpha = 1f;
         gradientAlphaKeys[2].time = 0.61f;
-        gradientAlphaKeys[3].alpha = 0f;
+        gradientAlphaKeys[3].alpha = 1f;
         gradientAlphaKeys[3].time = 0.85f;
 
         gradient.SetKeys(gradientColorKeys, gradientAlphaKeys);
