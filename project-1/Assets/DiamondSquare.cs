@@ -40,6 +40,10 @@ public class DiamondSquare : MonoBehaviour
         }
     }
 
+    public Mesh GetMesh() {
+        return landScapeMesh.mesh;
+    }
+
     private Mesh CreateLandScapeMesh(int iterations){
         Mesh m = new Mesh();
         m.name = "Landscape";
