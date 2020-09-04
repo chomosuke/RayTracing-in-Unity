@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CameraBoundary : MonoBehaviour
+public class LandscapeBoundary : MonoBehaviour
 {
     public enum Side {Front, Back, Top, Bottom, Left, Right }
     private BoxCollider boundary;
