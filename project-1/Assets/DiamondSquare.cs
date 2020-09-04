@@ -40,6 +40,7 @@ public class DiamondSquare : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space)){
             landScapeMesh.mesh = this.CreateLandScapeMesh(iterations);
             renderer.material.SetTexture("_BumpMap", _BumpMap);
+            water.GetComponent<WaterReflection>().setLandscapeMesh(landScapeMesh.mesh);
         }
     }
 
