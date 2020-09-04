@@ -101,8 +101,8 @@ Shader "Unlit/WaveShader"
 			// damn too much coupling between functions for this thing.
 			// v.y should not be in this function
 			/* + _Time.y*/
-				return sin(v.x*10 + _Time.y)/500 + 0.4;
-				//return 0.4;
+				// return sin(v.x*10 + _Time.y)/500 + 0.4;
+				return 0.6;
 			}
 
 			float3 getNormal(float3 v0, float3 v1, float3 v2) {
@@ -169,17 +169,17 @@ Shader "Unlit/WaveShader"
 					}
 
 					float w[3]; // linear interpolation
-					w[0] = ((coords[1].y - coords[2].y) * (intersection.x - coords[2].x)
-							+ (coords[2].x - coords[1].x) * (intersection.y - coords[2].y))
+					w[0] = ((vOut[1].position.y - vOut[2].position.y) * (intersection.x - vOut[2].position.x)
+							+ (vOut[2].position.x - vOut[1].position.x) * (intersection.y - vOut[2].position.y))
 							/
-							((coords[1].y - coords[2].y) * (coords[0].x - coords[2].x)
-							+ (coords[2].x - coords[1].x) * (coords[0].y - coords[2].y));
+							((vOut[1].position.y - vOut[2].position.y) * (vOut[0].position.x - vOut[2].position.x)
+							+ (vOut[2].position.x - vOut[1].position.x) * (vOut[0].position.y - vOut[2].position.y));
 
-					w[1] = ((coords[2].y - coords[0].y) * (intersection.x - coords[2].x)
-							+ (coords[0].x - coords[2].x) * (intersection.y - coords[2].y))
+					w[1] = ((vOut[2].position.y - vOut[0].position.y) * (intersection.x - vOut[2].position.x)
+							+ (vOut[0].position.x - vOut[2].position.x) * (intersection.y - vOut[2].position.y))
 							/
-							((coords[1].y - coords[2].y) * (coords[0].x - coords[2].x)
-							+ (coords[2].x - coords[1].x) * (coords[0].y - coords[2].y));
+							((vOut[1].position.y - vOut[2].position.y) * (vOut[0].position.x - vOut[2].position.x)
+							+ (vOut[2].position.x - vOut[1].position.x) * (vOut[0].position.y - vOut[2].position.y));
 
 					w[2] = 1 - w[0] - w[1];
 
