@@ -39,18 +39,21 @@ Shader "Unlit/PhongShader"
 				float4 vertex : SV_POSITION;
 				float4 color : COLOR0;
 				float3 normal : NORMAL;
-				float3 position : POSITION_IN_WORLD_SPACE;
 				float2 uv : TEXCOORD0;
 				half3 tspace0 : TEXCOORD1;
                 half3 tspace1 : TEXCOORD2;
                 half3 tspace2 : TEXCOORD3;
 				float4 tangent : TANGENT;
+				float3 position : POSITION_IN_OBJECT_SPACE;
+				float3 lightDirection : LIGHT_DIRECTION_LANDSCAPE_SPACE;
+				float3 cameraPos : CAMERA_POSITION_LANDSCAPE_SPACE;
 			};
 
 			// Implementation of the vertex shader
 			vertOut vert(vertIn v)
 			{
 				vertOut o;
+				
 				o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
 				o.color = v.color;
 				o.normal = v.normal;
@@ -65,16 +68,16 @@ Shader "Unlit/PhongShader"
                 o.tspace0 = half3(wTangent.x, wBitangent.x, wNormal.x);
                 o.tspace1 = half3(wTangent.y, wBitangent.y, wNormal.y);
                 o.tspace2 = half3(wTangent.z, wBitangent.z, wNormal.z);
+
+				// according to documentation Directional lights: (world space direction, 0). Other lights: (world space position, 1).
+				o.lightDirection = normalize(mul(unity_WorldToObject, _WorldSpaceLightPos0));
+				o.cameraPos = mul(unity_WorldToObject, _WorldSpaceCameraPos);
 				return o;
 			}
 			
 			// Implementation of the fragment shader
 			fixed4 frag(vertOut v) : SV_Target
 			{
-				// according to documentation Directional lights: (world space direction, 0). Other lights: (world space position, 1).
-				float3 lightDirection = _WorldSpaceLightPos0;
-				
-				float3 cameraTransform = mul(unity_WorldToObject, _WorldSpaceCameraPos);
 
 				// sample the normal map, and decode from the Unity encoding
                 half3 tnormal = UnpackNormal(tex2D(_BumpMap, v.uv));
@@ -91,11 +94,11 @@ Shader "Unlit/PhongShader"
 				// in case of theta larger than 90 degrees cos(theta) will be smaller than 0
 				// that isn't very acceptable cause theta > 90 just mean the light is on the other side
 				// so hence max(dot(...), 0)
-				float diffuse = max(dot(normalize(v.normal), normalize(lightDirection)), 0.0);
+				float diffuse = max(dot(normalize(v.normal), normalize(v.lightDirection)), 0.0);
 				diffuse *= 1.0-ambient; // this is so that diffuse + ambient <= 1
 
-				float3 viewDir = v.position - cameraTransform;
-				float3 reflectionDir = reflect(lightDirection, v.normal); // this will be normalized
+				float3 viewDir = v.position - v.cameraPos;
+				float3 reflectionDir = reflect(v.lightDirection, -v.normal);
 				
 				float specular = dot(normalize(viewDir), normalize(reflectionDir));
 				if (specular <= 0.0) {
@@ -104,7 +107,7 @@ Shader "Unlit/PhongShader"
 				} else {
 					specular = pow(specular, n) * specularFraction;
 				}
-				float4 specularComponent = {specular, specular, specular, specular };
+				float4 specularComponent = {specular, specular, specular, 0 };
 				
 				return v.color * (ambient + diffuse) + specularComponent;
 			}
