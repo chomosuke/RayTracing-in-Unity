@@ -17,6 +17,9 @@ Shader "Unlit/WaveShader"
 
 			#include "UnityCG.cginc"
 
+			#define EPSILON 0.0000001
+			// to combat floating point precision problem when ==
+
 			uniform sampler2D_float landscapeVertices;
 			uniform sampler2D_float landscapeNormals;
 			uniform sampler2D landscapeColors;
@@ -135,6 +138,7 @@ Shader "Unlit/WaveShader"
 			
 			// Implementation of the fragment shader
 			fixed4 frag(vertOut v) : SV_Target {
+				// potential optimization: only render when pixel is visible i.e. don't render if pixel is under the landscape
 				
 				// per pixel normal
 				float3 normal = getNormal(v.positionObject);
@@ -249,7 +253,9 @@ Shader "Unlit/WaveShader"
 						if (texDir.y > 0) {
 							nextTexCoord.y = bottomLeft.y + texDelta;
 						} else {
-							if (bottomLeft.y == texCoord.y) {
+							float diff = bottomLeft.y - texCoord.y;
+							if (diff > -EPSILON && diff < EPSILON) {
+								// i had some floating point precision problem here
 								nextTexCoord.y = bottomLeft.y - texDelta;
 							}
 							else {
@@ -258,16 +264,17 @@ Shader "Unlit/WaveShader"
 						} 
 						// find next x according to y
 						nextTexCoord.x = (nextTexCoord.y - texCoord.y) / texDir.y * texDir.x + texCoord.x;
-						// make sure than x doesn't go out of bound
-						nextTexCoord.x = min(nextTexCoord.x, maxi);
-						nextTexCoord.x = max(nextTexCoord.x, 0);
+						// make sure that x doesn't go out of bound
+						nextTexCoord.x = min(nextTexCoord.x, maxi - EPSILON);
+						nextTexCoord.x = max(nextTexCoord.x, 0 + EPSILON);
+						// those EPSILON in the above 2 line is necessary but i don't know why
 					}
 					// i wonder if you can write a functional shader... that'll be nice
 					
 					// in the case of nextTexCoord.y < texCoord.y bottomLeft.y should be nextTexCoord.y
-					// if (nextTexCoord.y < texCoord.y) {
-					// 	bottomLeft.y = nextTexCoord.y;
-					// }
+					if (nextTexCoord.y < texCoord.y) {
+						bottomLeft.y = nextTexCoord.y;
+					}
 
 					float leftX = bottomLeft.x;
 					float rightX = bottomLeft.x + texDelta;
@@ -309,13 +316,11 @@ Shader "Unlit/WaveShader"
 						bottomLeft.x = leftX;
 					}
 
-
 					texCoord = nextTexCoord;
 				}
 
 				return o;
 			}
-
 			// Moller-Trumbore intersection algorithm
 			bool MTIntersection(float3 rayOrigin, float3 rayDir, 
 							    float3 coord1, float3 coord2, float3 coord3,
@@ -323,7 +328,6 @@ Shader "Unlit/WaveShader"
 				// converted from:
 				// https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
 				// C++ implementation
-				const float EPSILON = 0.0000001;
 				float3 edge1 = coord2 - coord1;
 				float3 edge2 = coord3 - coord1;
 				float3 h = cross(rayDir, edge2);
