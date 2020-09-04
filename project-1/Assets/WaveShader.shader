@@ -69,8 +69,6 @@ Shader "Unlit/WaveShader"
 				float4 color : COLOR0;
 				float3 normal : NORMAL;
 				float3 position : POSITION_IN_OBJECT_SPACE;
-				float3 lightDirection : LIGHT_DIRECTION_LANDSCAPE_SPACE;
-				float3 cameraPos : CAMERA_POSITION_LANDSCAPE_SPACE;
 			};
 
 			float getY(float3 v);
@@ -82,7 +80,7 @@ Shader "Unlit/WaveShader"
 								out float3 intersection);
 
 			vertOutLandscape landscapeVert(vertInLandscape v);
-			fixed4 landscapeFrag(vertOutLandscape v);
+			fixed4 landscapeFrag(vertOutLandscape v, float3 lightDirection, float3 cameraPos);
 
 			// Implementation of the vertex shader
 			vertOut vert(vertIn v)
@@ -103,8 +101,8 @@ Shader "Unlit/WaveShader"
 			// damn too much coupling between functions for this thing.
 			// v.y should not be in this function
 			/* + _Time.y*/
-				// return sin(v.x*10 + _Time.y)/200 + 0.4;
-				return 0.4;
+				return sin(v.x*10 + _Time.y)/500 + 0.4;
+				//return 0.4;
 			}
 
 			float3 getNormal(float3 v0, float3 v1, float3 v2) {
@@ -138,7 +136,11 @@ Shader "Unlit/WaveShader"
 			
 			// Implementation of the fragment shader
 			fixed4 frag(vertOut v) : SV_Target {
-				// potential optimization: only render when pixel is visible i.e. don't render if pixel is under the landscape
+				
+				// only render when pixel is visible i.e. don't render if pixel is under the landscape
+				if (v.positionLandscape.y + 0.2 < // TODO: find a good value other than 0.2 using parameters
+					tex2D(landscapeVertices, v.positionObject.xz/landscapeSideLength).y)
+					discard;
 				
 				// per pixel normal
 				float3 normal = getNormal(v.positionObject);
@@ -149,15 +151,55 @@ Shader "Unlit/WaveShader"
 				float3 viewDir = v.positionLandscape - v.cameraPos;
 				float3 reflectionDir = reflect(viewDir, normal);
 				
-
-				fixed4 color = {0, 0, 0, 1};
 				float3 intersection;
 				textCoords t = findTriangle(reflectionDir, v.positionLandscape, intersection);
 				if (t.coord1.x != -1) {
-					color.r = t.coord1.x;
-					color.g = t.coord1.y;
+					// linearly interpolate
+					vertInLandscape vIn;
+					half2 coords[3];
+					coords[0] = t.coord1;
+					coords[1] = t.coord2;
+					coords[2] = t.coord3;
+					vertOutLandscape vOut[3];
+					for (uint i = 0; i < 3; i++) {
+						vIn.vertex = tex2Dlod(landscapeVertices, float4(coords[i], 0, 0));
+						vIn.color = tex2Dlod(landscapeColors, float4(coords[i], 0, 0));
+						vIn.normal = tex2Dlod(landscapeNormals, float4(coords[i], 0, 0));
+						vOut[i] = landscapeVert(vIn);
+					}
+
+					float w[3]; // linear interpolation
+					w[0] = ((coords[1].y - coords[2].y) * (intersection.x - coords[2].x)
+							+ (coords[2].x - coords[1].x) * (intersection.y - coords[2].y))
+							/
+							((coords[1].y - coords[2].y) * (coords[0].x - coords[2].x)
+							+ (coords[2].x - coords[1].x) * (coords[0].y - coords[2].y));
+
+					w[1] = ((coords[2].y - coords[0].y) * (intersection.x - coords[2].x)
+							+ (coords[0].x - coords[2].x) * (intersection.y - coords[2].y))
+							/
+							((coords[1].y - coords[2].y) * (coords[0].x - coords[2].x)
+							+ (coords[2].x - coords[1].x) * (coords[0].y - coords[2].y));
+
+					w[2] = 1 - w[0] - w[1];
+
+					vertOutLandscape vOutIn;
+					vOutIn.color = float4(0, 0, 0, 0);
+					vOutIn.vertex = float4(0, 0, 0, 0);
+					vOutIn.normal = float3(0, 0, 0);
+					vOutIn.position = float3(0, 0, 0);
+					for (i = 0; i < 3; i++) {
+						vOutIn.vertex += vOut[i].vertex * w[i];
+						vOutIn.color += vOut[i].color * w[i];
+						vOutIn.normal += vOut[i].normal * w[i];
+						vOutIn.position += vOut[i].position * w[i];
+					}
+
+					return landscapeFrag(vOutIn, v.lightDirection, v.cameraPos);
+
+				} else {
+					return float4(104.0/256, 131.0/256, 170.0/256, 1);
 				}
-				return color;
 			}
 
 			// search for the triangle that the ray first hit
@@ -348,7 +390,7 @@ Shader "Unlit/WaveShader"
 				}
 				// at this stage we can compute t to find out where the intersection point is on the line.
 				float t = f * dot(edge2, q);
-				if (t > EPSILON) // ray intersection
+				if (t > 0) // ray intersection
 				{
 					intersection = rayOrigin + rayDir * t;
 					return true;
@@ -361,7 +403,7 @@ Shader "Unlit/WaveShader"
 
 			// // this fragment shader is to test the correctness of sampler2d passed in
 			// fixed4 frag(vertOut v) : SV_Target {
-			// 	return tex2D(landscapeVertices, v.positionObject.xz/10);
+			// 	return tex2D(landscapeVertices, v.positionObject.xz/landscapeSideLength);
 			// }
 
 			// // this fragment shader test the getNormal function
@@ -381,13 +423,10 @@ Shader "Unlit/WaveShader"
 				o.normal = v.normal;
 				o.position = v.vertex;
 
-				// according to documentation Directional lights: (world space direction, 0). Other lights: (world space position, 1).
-				// o.lightDirection = ;
-				// o.cameraPos = ;
 				return o;
 			}
-			// this shader must be exactly identical to the one in PhongShader.shader
-			fixed4 landscapeFrag(vertOutLandscape v)
+			// this shader must be exactly identical to the one in PhongShader.shader except reference to lightdirection and cameraPos
+			fixed4 landscapeFrag(vertOutLandscape v, float3 lightDirection, float3 cameraPos)
 			{
 				// dot product will give ||a|| ||b|| cos(theta)
 				// as both a and b are unit vector (i normalized them)
@@ -395,11 +434,11 @@ Shader "Unlit/WaveShader"
 				// in case of theta larger than 90 degrees cos(theta) will be smaller than 0
 				// that isn't very acceptable cause theta > 90 just mean the light is on the other side
 				// so hence max(dot(...), 0)
-				float diffuse = max(dot(normalize(v.normal), normalize(v.lightDirection)), 0.0);
+				float diffuse = max(dot(normalize(v.normal), normalize(lightDirection)), 0.0);
 				diffuse *= 1.0-ambient; // this is so that diffuse + ambient <= 1
 
-				float3 viewDir = v.position - v.cameraPos;
-				float3 reflectionDir = reflect(v.lightDirection, -v.normal);
+				float3 viewDir = v.position - cameraPos;
+				float3 reflectionDir = reflect(lightDirection, -v.normal);
 				
 				float specular = dot(normalize(viewDir), normalize(reflectionDir));
 				if (specular <= 0.0) {
