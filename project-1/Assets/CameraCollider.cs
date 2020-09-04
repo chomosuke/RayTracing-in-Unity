@@ -17,7 +17,7 @@ public class CameraCollider : MonoBehaviour
 
     }
 
-    // Moves camera up when 
+    // Prevents camera from 'bouncing' away when colliding with another collider
     void OnCollisionStay(Collision other) {
         GetComponent<Rigidbody>().velocity = Vector3.zero;
         GetComponent<Rigidbody>().angularVelocity = Vector3.zero;

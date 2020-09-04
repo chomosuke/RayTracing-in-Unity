@@ -6,6 +6,8 @@ public class CameraBoundary : MonoBehaviour
 {
     public enum Side {Front, Back, Top, Bottom, Left, Right }
     private BoxCollider boundary;
+
+    // Assign edge to boundary in editor
     public Side edge;
 
     public float margin = 1.0f;
@@ -21,6 +23,7 @@ public class CameraBoundary : MonoBehaviour
 
       // Update is called once per frame
     void Update() {
+        // Resets boundary if new terrain is generated
         if(!boundarySet) {
             setBoundary();
             boundarySet = true;
@@ -31,41 +34,41 @@ public class CameraBoundary : MonoBehaviour
 
 
     }
-
+    
     public void setBoundary()
     {
         DiamondSquare diamondSquare = GameObject.Find("Landscape").GetComponent<DiamondSquare>();
-        float maxHeight = diamondSquare.maxSeedHeight + margin;
-        float maxSide = diamondSquare.sizeOfLandscape + margin;
+        float unitHeight = diamondSquare.maxSeedHeight + margin;
+        float unitSide = diamondSquare.sizeOfLandscape + margin;
         
-
-
+        // Setting the size of box collider for the edge
         if(edge == Side.Top || edge == Side.Bottom) {
-            boundary.size = new Vector3(maxSide, margin, maxSide);
+            boundary.size = new Vector3(unitSide, margin, unitSide);
         } else if (edge == Side.Front || edge == Side.Back) {
-            boundary.size = new Vector3(maxSide, maxHeight*4.0f, margin);
+            boundary.size = new Vector3(unitSide, unitHeight*4.0f, margin);
         } else {
-            boundary.size = new Vector3(margin, maxHeight*4.0f, maxSide);
+            boundary.size = new Vector3(margin, unitHeight*4.0f, unitSide);
         }
 
+        // Sets the position of the box collider (size: total height = 4 * unitHeight, side = unitSide)
         switch(edge) {
             case Side.Top:
-               this.gameObject.transform.position = new Vector3(maxSide/2, maxHeight*3.0f, maxSide/2);
+               this.gameObject.transform.position = new Vector3(unitSide/2, unitHeight*3.0f, unitSide/2);
                 break;
             case Side.Bottom:
-                this.gameObject.transform.position = new Vector3(maxSide/2, -maxHeight, maxSide/2);
+                this.gameObject.transform.position = new Vector3(unitSide/2, -unitHeight, unitSide/2);
                 break;
             case Side.Left:
-                this.gameObject.transform.position = new Vector3(0.0f, maxHeight, maxSide/2);
+                this.gameObject.transform.position = new Vector3(0.0f, unitHeight, unitSide/2);
                 break;
             case Side.Right:
-                this.gameObject.transform.position = new Vector3(maxSide, maxHeight, maxSide/2);
+                this.gameObject.transform.position = new Vector3(unitSide, unitHeight, unitSide/2);
                 break;
             case Side.Front:
-                this.gameObject.transform.position = new Vector3(maxSide/2, maxHeight, maxSide);
+                this.gameObject.transform.position = new Vector3(unitSide/2, unitHeight, unitSide);
                 break;
             case Side.Back:
-                this.gameObject.transform.position = new Vector3(maxSide/2, maxHeight, 0.0f);
+                this.gameObject.transform.position = new Vector3(unitSide/2, unitHeight, 0.0f);
                 break;
         }
 
