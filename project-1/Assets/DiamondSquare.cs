@@ -21,7 +21,7 @@ public class DiamondSquare : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        random = new System.Random((int)(Time.realtimeSinceStartup));
+        random = new System.Random((int)(DateTime.Now.Millisecond));
         landScapeMesh = this.gameObject.AddComponent<MeshFilter>();
         landScapeMesh.mesh = CreateLandScapeMesh(iterations);
         renderer = this.gameObject.AddComponent<MeshRenderer>();
