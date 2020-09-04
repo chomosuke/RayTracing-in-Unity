@@ -324,10 +324,10 @@ MonoBehaviour:
   maxSeedHeight: 2
   noise: 5
   sizeOfLandscape: 10
-  iterations: 8
-  n: 1.5
+  iterations: 6
+  n: 100
   water: {fileID: 690556179}
-  specularFraction: 0.11
+  specularFraction: 0.682
   ambient: 0.34
   _BumpMap: {fileID: 0}
 --- !u!1 &1959472829

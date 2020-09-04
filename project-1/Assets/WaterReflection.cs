@@ -19,8 +19,8 @@ public class WaterReflection : MonoBehaviour
         meshFilter.mesh = GenerateMesh();
         renderer = this.gameObject.AddComponent<MeshRenderer>();
         renderer.material.shader = Shader.Find("Unlit/WaveShader");
-        // renderer.material.SetInt("numOfVerticesOnPlaneEdge", planeMeshSize);
-        // renderer.material.SetFloat("planeSize", size);
+        renderer.material.SetInt("numOfVerticesOnPlaneEdge", planeMeshSize);
+        renderer.material.SetFloat("planeSize", size);
     }
 
     float[] landscapeVertices;
@@ -78,6 +78,9 @@ public class WaterReflection : MonoBehaviour
             colors.filterMode = FilterMode.Point;
             renderer.material.SetTexture("landscapeColors", colors);
 
+            renderer.material.SetFloat("landscapeSideLength", landscape.sizeOfLandscape);
+            renderer.material.SetInt("landscapeSize", landscapeSize);
+
             // indicate that it's already been passed to uniforms
             landscapeVertices = null;
             landscapeNormals = null;
@@ -85,7 +88,7 @@ public class WaterReflection : MonoBehaviour
         }
     }
 
-    const int planeMeshSize = 500;
+    const int planeMeshSize = 200;
     private Mesh GenerateMesh() {
         Mesh m = new Mesh();
         m.name = "water";
@@ -146,5 +149,6 @@ public class WaterReflection : MonoBehaviour
         renderer.material.SetFloat("n", landscape.n);
         renderer.material.SetFloat("ambient", landscape.ambient);
         renderer.material.SetFloat("specularFraction", landscape.specularFraction);
+        renderer.material.SetMatrix("worldToLandscape", landscape.GetComponent<MeshRenderer>().worldToLocalMatrix);
     }
 }
