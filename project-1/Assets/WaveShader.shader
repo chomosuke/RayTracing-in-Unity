@@ -165,13 +165,27 @@ Shader "Unlit/WaveShader"
 				
 				float3 intersection;
 				textCoords t = findTriangle(reflectionDir, v.positionLandscape, intersection);
+				fixed3 reflection;
 				if (t.coord1.x != -1) {
 					// return fixed4(1, 0, 0, 1);
-					return getLandscapeColor(t, intersection, v.lightDirection, v.cameraPos) * 0.75;
+					reflection = getLandscapeColor(t, intersection, v.lightDirection, v.cameraPos);
 				} else {
-					return float4(104.0/256, 131.0/256, 170.0/256, 1) * 0.75;
-					// return fixed4(0, 0, 0, 1);
+					reflection = fixed4(104.0/256, 131.0/256, 170.0/256, 1);
 				}
+
+				float3 refractDir = refract(viewDir, normal, 1/1.333);
+				t = findTriangle(refractDir, v.positionLandscape, intersection);
+				fixed3 refraction;
+				if (t.coord1.x != -1) {
+
+					refraction = 
+						getLandscapeColor(t, intersection, v.lightDirection, v.cameraPos)
+						* pow(0.3, distance(intersection, v.positionLandscape));
+				} else {
+					refraction = fixed4(104.0/256, 131.0/256, 170.0/256, 1);
+				}
+
+				return fixed4(refraction * 0.5 + reflection * 0.5, 1);
 			}
 
 

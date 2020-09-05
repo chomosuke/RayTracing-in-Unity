@@ -84,7 +84,7 @@ public class WaterReflection : MonoBehaviour
         return array;
     }
 
-    const int planeMeshSize = 200;
+    const int planeMeshSize = 256;
     private Mesh GenerateMesh() {
         Mesh m = new Mesh();
         m.name = "water";
