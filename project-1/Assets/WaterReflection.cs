@@ -144,5 +144,6 @@ public class WaterReflection : MonoBehaviour
         renderer.material.SetFloat("ambient", landscape.ambient);
         renderer.material.SetFloat("specularFraction", landscape.specularFraction);
         renderer.material.SetMatrix("worldToLandscape", landscape.GetComponent<MeshRenderer>().worldToLocalMatrix);
+        renderer.material.SetFloat("offset", 0.6f);
     }
 }

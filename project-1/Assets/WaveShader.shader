@@ -31,6 +31,7 @@ Shader "Unlit/WaveShader"
 			uniform float4x4 worldToLandscape;
 			uniform int numOfVerticesOnPlaneEdge;
 			uniform float planeSize; 
+			uniform float offset;
 
 			// uniform for PhongShader
 			uniform float n;
@@ -113,8 +114,8 @@ Shader "Unlit/WaveShader"
 			// damn too much coupling between functions for this thing.
 			// v.y should not be in this function
 			/* + _Time.y*/
-				return sin(v.x*10 + _Time.y)/200 + 0.6;
-				return 0.6;
+				return sin(v.x*10 + _Time.y)/200 + offset;
+				return offset;
 			}
 
 			float3 getNormal(float3 v0, float3 v1, float3 v2) {
@@ -180,12 +181,13 @@ Shader "Unlit/WaveShader"
 
 					refraction = 
 						getLandscapeColor(t, intersection, v.lightDirection, v.cameraPos)
-						* pow(0.3, distance(intersection, v.positionLandscape));
+						* pow(0.5, distance(intersection, v.positionLandscape))
+						* pow(0.5, offset - intersection.y + 1);
 				} else {
-					refraction = fixed4(104.0/256, 131.0/256, 170.0/256, 1);
+					refraction = fixed4(104.0/256, 131.0/256, 170.0/256, 1) / 2;
 				}
 
-				return fixed4(refraction * 0.5 + reflection * 0.5, 1);
+				return fixed4(refraction + reflection * 0.5, 1);
 			}
 
 
