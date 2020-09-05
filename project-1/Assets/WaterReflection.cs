@@ -23,16 +23,27 @@ public class WaterReflection : MonoBehaviour
         renderer.material.SetFloat("planeSize", size);
     }
 
-    float[] landscapeVertices;
-    float[] landscapeNormals;
-    float[] landscapeColors;
-    int landscapeSize;
     public void setLandscapeMesh(Mesh mesh) {
-        landscapeVertices = vect3ToFloatArray(mesh.vertices);
-        landscapeNormals = vect3ToFloatArray(mesh.normals);
-        landscapeColors = colorsToFloatArray(mesh.colors);
-        landscapeSize = (int)Math.Sqrt(landscapeVertices.Length/4);
-        updateLandscapeUniforms();
+        Vector3[] vertices = mesh.vertices;
+        int landscapeSize = (int)Math.Sqrt(vertices.Length);
+        
+        setUniform(landscapeSize, TextureFormat.RGBAFloat, vect3ToFloatArray(vertices), "landscapeVertices");
+        setUniform(landscapeSize, TextureFormat.RGBAFloat, vect3ToFloatArray(mesh.normals), "landscapeNormals");
+        setUniform(landscapeSize, TextureFormat.RGBAFloat, colorsToFloatArray(mesh.colors), "landscapeColors");
+        setUniform(landscapeSize, TextureFormat.RGFloat, vect2ToFloatArray(mesh.uv), "landscapeUV");
+        setUniform(landscapeSize, TextureFormat.RGBAFloat, vect4ToFloatArray(mesh.tangents), "landscapeTangents");
+        renderer.material.SetTexture("_BumpMap", landscape.GetTexture("_BumpMap"));
+
+        renderer.material.SetFloat("landscapeSideLength", landscape.sizeOfLandscape);
+        renderer.material.SetInt("landscapeSize", landscapeSize);
+    }
+    private void setUniform(int size, TextureFormat textureFormat, float[] data, String textureName) {
+        
+        Texture2D texture = new Texture2D(size, size, textureFormat, false);
+        texture.LoadRawTextureData(new NativeArray<float>(data, Allocator.Temp));
+        texture.Apply();
+        texture.filterMode = FilterMode.Point;
+        renderer.material.SetTexture(textureName, texture);
     }
     private float[] vect3ToFloatArray(Vector3[] vects) {
         float[] array = new float[vects.Length*4];
@@ -54,38 +65,23 @@ public class WaterReflection : MonoBehaviour
         }
         return array;
     }
-
-    private void updateLandscapeUniforms() {
-        if (landscapeVertices != null 
-         && landscapeNormals != null 
-         && landscapeColors != null) {
-
-            Texture2D vertices = new Texture2D(landscapeSize, landscapeSize, TextureFormat.RGBAFloat, false);
-            vertices.LoadRawTextureData(new NativeArray<float>(landscapeVertices, Allocator.Temp));
-            vertices.Apply();
-            vertices.filterMode = FilterMode.Point;
-            renderer.material.SetTexture("landscapeVertices", vertices);
-
-            Texture2D normals = new Texture2D(landscapeSize, landscapeSize, TextureFormat.RGBAFloat, false);
-            normals.LoadRawTextureData(new NativeArray<float>(landscapeNormals, Allocator.Temp));
-            normals.Apply();
-            normals.filterMode = FilterMode.Point;
-            renderer.material.SetTexture("landscapeNormals", normals);
-
-            Texture2D colors = new Texture2D(landscapeSize, landscapeSize, TextureFormat.RGBAFloat, false);
-            colors.LoadRawTextureData(new NativeArray<float>(landscapeColors, Allocator.Temp));
-            colors.Apply();
-            colors.filterMode = FilterMode.Point;
-            renderer.material.SetTexture("landscapeColors", colors);
-
-            renderer.material.SetFloat("landscapeSideLength", landscape.sizeOfLandscape);
-            renderer.material.SetInt("landscapeSize", landscapeSize);
-
-            // indicate that it's already been passed to uniforms
-            landscapeVertices = null;
-            landscapeNormals = null;
-            landscapeColors = null;
+    private float[] vect2ToFloatArray(Vector2[] vects) {
+        float[] array = new float[vects.Length*2];
+        for (int i = 0; i < vects.Length; i++) {
+            array[i*2] = vects[i].x;
+            array[i*2+1] = vects[i].y;
         }
+        return array;
+    }
+    private float[] vect4ToFloatArray(Vector4[] vects) {
+        float[] array = new float[vects.Length*4];
+        for (int i = 0; i < vects.Length; i++) {
+            array[i*4] = vects[i].x;
+            array[i*4+1] = vects[i].y;
+            array[i*4+2] = vects[i].z;
+            array[i*4+3] = vects[i].w;
+        }
+        return array;
     }
 
     const int planeMeshSize = 200;
@@ -101,8 +97,6 @@ public class WaterReflection : MonoBehaviour
         m.vertices = vertices;
         int[] triangles = GenerateTriangles(vertices);
         m.triangles = triangles;
-        // m.normals = GenerateNormals(triangles, vertices);
-        // m.RecalculateNormals();
         return m;
     }
 

@@ -25,10 +25,12 @@ public class DiamondSquare : MonoBehaviour
         random = new System.Random((int)(DateTime.Now.Millisecond));
         landScapeMesh = this.gameObject.AddComponent<MeshFilter>();
         landScapeMesh.mesh = CreateLandScapeMesh(iterations);
-        water.GetComponent<WaterReflection>().setLandscapeMesh(landScapeMesh.mesh);
+        
         renderer = this.gameObject.AddComponent<MeshRenderer>();
         renderer.material.shader = Shader.Find("Unlit/PhongShader");
         renderer.material.SetTexture("_BumpMap", _BumpMap);
+
+        water.GetComponent<WaterReflection>().setLandscapeMesh(landScapeMesh.mesh);
     }
 
     // Update is called once per frame
@@ -42,6 +44,10 @@ public class DiamondSquare : MonoBehaviour
             renderer.material.SetTexture("_BumpMap", _BumpMap);
             water.GetComponent<WaterReflection>().setLandscapeMesh(landScapeMesh.mesh);
         }
+    }
+
+    public Texture GetTexture(String name) {
+        return renderer.material.GetTexture(name);
     }
 
     private Mesh CreateLandScapeMesh(int iterations){
@@ -74,6 +80,7 @@ public class DiamondSquare : MonoBehaviour
         m.uv = uvs;
         // m.normals = GenerateNormals(triangles, vertices);
         m.RecalculateNormals();
+        m.RecalculateTangents();
         return m;
     }
 

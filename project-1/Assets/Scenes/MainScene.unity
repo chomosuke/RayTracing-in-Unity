@@ -703,8 +703,8 @@ MonoBehaviour:
   iterations: 6
   n: 100
   water: {fileID: 690556179}
-  specularFraction: 0.682
-  ambient: 0.34
+  specularFraction: 0.336
+  ambient: 0.159
   _BumpMap: {fileID: 2800000, guid: e5895469fa6440e4a876bf0672599e59, type: 3}
 --- !u!114 &1658723782
 MonoBehaviour:

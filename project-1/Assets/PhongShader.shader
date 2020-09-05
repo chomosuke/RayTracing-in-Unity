@@ -28,9 +28,6 @@ Shader "Unlit/PhongShader"
 				float4 color : COLOR0;
 				float3 normal : NORMAL;
 				float2 uv : TEXCOORD0;
-				half3 tspace0 : TEXCOORD1;
-                half3 tspace1 : TEXCOORD2;
-                half3 tspace2 : TEXCOORD3;
 				float4 tangent : TANGENT;
 			};
 

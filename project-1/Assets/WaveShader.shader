@@ -23,6 +23,9 @@ Shader "Unlit/WaveShader"
 			uniform sampler2D_float landscapeVertices;
 			uniform sampler2D_float landscapeNormals;
 			uniform sampler2D landscapeColors;
+			uniform sampler2D_float landscapeUV;
+			uniform sampler2D_float landscapeTangents;
+			uniform sampler2D _BumpMap;
 			uniform int landscapeSize;
 			uniform float landscapeSideLength;
 			uniform float4x4 worldToLandscape;
@@ -61,6 +64,8 @@ Shader "Unlit/WaveShader"
 				float4 vertex : POSITION;
 				float4 color : COLOR0;
 				float3 normal : NORMAL;
+				float2 uv : TEXCOORD0;
+				float4 tangent : TANGENT;
 			};
 			// like landscapeFrag, this struct have to be identical to the one in PhongShader.shader
 			struct vertOutLandscape
@@ -68,6 +73,11 @@ Shader "Unlit/WaveShader"
 				float4 vertex : SV_POSITION;
 				float4 color : COLOR0;
 				float3 normal : NORMAL;
+				float2 uv : TEXCOORD0;
+				half3 tspace0 : TEXCOORD1;
+                half3 tspace1 : TEXCOORD2;
+                half3 tspace2 : TEXCOORD3;
+				float4 tangent : TANGENT;
 				float3 position : POSITION_IN_OBJECT_SPACE;
 			};
 
@@ -78,6 +88,8 @@ Shader "Unlit/WaveShader"
 			bool MTIntersection(float3 rayOrigin, float3 rayDir, 
 							    float3 coord1, float3 coord2, float3 coord3,
 								out float3 intersection);
+								
+			fixed4 getLandscapeColor(textCoords t, float3 intersection, float3 lightDirection, float3 cameraPos);
 
 			vertOutLandscape landscapeVert(vertInLandscape v);
 			fixed4 landscapeFrag(vertOutLandscape v, float3 lightDirection, float3 cameraPos);
@@ -101,7 +113,7 @@ Shader "Unlit/WaveShader"
 			// damn too much coupling between functions for this thing.
 			// v.y should not be in this function
 			/* + _Time.y*/
-				// return sin(v.x*10 + _Time.y)/500 + 0.4;
+				return sin(v.x*10 + _Time.y)/200 + 0.6;
 				return 0.6;
 			}
 
@@ -154,53 +166,14 @@ Shader "Unlit/WaveShader"
 				float3 intersection;
 				textCoords t = findTriangle(reflectionDir, v.positionLandscape, intersection);
 				if (t.coord1.x != -1) {
-					// linearly interpolate
-					vertInLandscape vIn;
-					half2 coords[3];
-					coords[0] = t.coord1;
-					coords[1] = t.coord2;
-					coords[2] = t.coord3;
-					vertOutLandscape vOut[3];
-					for (uint i = 0; i < 3; i++) {
-						vIn.vertex = tex2Dlod(landscapeVertices, float4(coords[i], 0, 0));
-						vIn.color = tex2Dlod(landscapeColors, float4(coords[i], 0, 0));
-						vIn.normal = tex2Dlod(landscapeNormals, float4(coords[i], 0, 0));
-						vOut[i] = landscapeVert(vIn);
-					}
-
-					float w[3]; // linear interpolation
-					w[0] = ((vOut[1].position.y - vOut[2].position.y) * (intersection.x - vOut[2].position.x)
-							+ (vOut[2].position.x - vOut[1].position.x) * (intersection.y - vOut[2].position.y))
-							/
-							((vOut[1].position.y - vOut[2].position.y) * (vOut[0].position.x - vOut[2].position.x)
-							+ (vOut[2].position.x - vOut[1].position.x) * (vOut[0].position.y - vOut[2].position.y));
-
-					w[1] = ((vOut[2].position.y - vOut[0].position.y) * (intersection.x - vOut[2].position.x)
-							+ (vOut[0].position.x - vOut[2].position.x) * (intersection.y - vOut[2].position.y))
-							/
-							((vOut[1].position.y - vOut[2].position.y) * (vOut[0].position.x - vOut[2].position.x)
-							+ (vOut[2].position.x - vOut[1].position.x) * (vOut[0].position.y - vOut[2].position.y));
-
-					w[2] = 1 - w[0] - w[1];
-
-					vertOutLandscape vOutIn;
-					vOutIn.color = float4(0, 0, 0, 0);
-					vOutIn.vertex = float4(0, 0, 0, 0);
-					vOutIn.normal = float3(0, 0, 0);
-					vOutIn.position = float3(0, 0, 0);
-					for (i = 0; i < 3; i++) {
-						vOutIn.vertex += vOut[i].vertex * w[i];
-						vOutIn.color += vOut[i].color * w[i];
-						vOutIn.normal += vOut[i].normal * w[i];
-						vOutIn.position += vOut[i].position * w[i];
-					}
-
-					return landscapeFrag(vOutIn, v.lightDirection, v.cameraPos);
-
+					// return fixed4(1, 0, 0, 1);
+					return getLandscapeColor(t, intersection, v.lightDirection, v.cameraPos) * 0.75;
 				} else {
-					return float4(104.0/256, 131.0/256, 170.0/256, 1);
+					return float4(104.0/256, 131.0/256, 170.0/256, 1) * 0.75;
+					// return fixed4(0, 0, 0, 1);
 				}
 			}
+
 
 			// search for the triangle that the ray first hit
 			textCoords findTriangle(float3 rayDir, float3 rayOrigin, out float3 intersection) {
@@ -412,6 +385,63 @@ Shader "Unlit/WaveShader"
 			// 	fixed4 color= {normal, 1.0};
 			// 	return color;
 			// }
+
+			fixed4 getLandscapeColor(textCoords t, float3 intersection, float3 lightDirection, float3 cameraPos) {
+				// linearly interpolate
+				vertInLandscape vIn;
+				half2 coords[3];
+				coords[0] = t.coord1;
+				coords[1] = t.coord2;
+				coords[2] = t.coord3;
+				vertOutLandscape vOut[3];
+				for (uint i = 0; i < 3; i++) {
+					vIn.vertex = tex2Dlod(landscapeVertices, float4(coords[i], 0, 0));
+					vIn.color = tex2Dlod(landscapeColors, float4(coords[i], 0, 0));
+					vIn.normal = tex2Dlod(landscapeNormals, float4(coords[i], 0, 0));
+					vIn.uv = tex2Dlod(landscapeUV, float4(coords[i], 0, 0));
+					vIn.tangent = tex2Dlod(landscapeTangents, float4(coords[i], 0, 0));
+					vOut[i] = landscapeVert(vIn);
+				}
+
+				float w[3]; // linear interpolation
+				w[0] = ((vOut[1].position.y - vOut[2].position.y) * (intersection.x - vOut[2].position.x)
+						+ (vOut[2].position.x - vOut[1].position.x) * (intersection.y - vOut[2].position.y))
+						/
+						((vOut[1].position.y - vOut[2].position.y) * (vOut[0].position.x - vOut[2].position.x)
+						+ (vOut[2].position.x - vOut[1].position.x) * (vOut[0].position.y - vOut[2].position.y));
+
+				w[1] = ((vOut[2].position.y - vOut[0].position.y) * (intersection.x - vOut[2].position.x)
+						+ (vOut[0].position.x - vOut[2].position.x) * (intersection.y - vOut[2].position.y))
+						/
+						((vOut[1].position.y - vOut[2].position.y) * (vOut[0].position.x - vOut[2].position.x)
+						+ (vOut[2].position.x - vOut[1].position.x) * (vOut[0].position.y - vOut[2].position.y));
+
+				w[2] = 1 - w[0] - w[1];
+
+				vertOutLandscape vOutIn;
+				vOutIn.color = float4(0, 0, 0, 0);
+				vOutIn.vertex = float4(0, 0, 0, 0);
+				vOutIn.normal = float3(0, 0, 0);
+				vOutIn.position = float3(0, 0, 0);
+				vOutIn.uv = float2(0, 0);
+				vOutIn.tspace0 = half3(0, 0, 0);
+				vOutIn.tspace1 = half3(0, 0, 0);
+				vOutIn.tspace2 = half3(0, 0, 0);
+				vOutIn.tangent = float4(0, 0, 0, 0);
+				for (i = 0; i < 3; i++) {
+					vOutIn.vertex += vOut[i].vertex * w[i];
+					vOutIn.color += vOut[i].color * w[i];
+					vOutIn.normal += vOut[i].normal * w[i];
+					vOutIn.position += vOut[i].position * w[i];
+					vOutIn.uv += vOut[i].uv * w[i];
+					vOutIn.tspace0 += vOut[i].tspace0 * w[i];
+					vOutIn.tspace1 += vOut[i].tspace1 * w[i];
+					vOutIn.tspace2 += vOut[i].tspace2 * w[i];
+					vOutIn.tangent += vOut[i].tangent * w[i];
+				}
+
+				return landscapeFrag(vOutIn, lightDirection, cameraPos);
+			}
 			
 			// this shader must be exactly identical to the one in PhongShader.shader
 			vertOutLandscape landscapeVert(vertInLandscape v)
@@ -423,11 +453,30 @@ Shader "Unlit/WaveShader"
 				o.normal = v.normal;
 				o.position = v.vertex;
 
+				o.uv = v.uv;
+				o.tangent = v.tangent;
+				half3 wNormal = UnityObjectToWorldNormal(o.normal);
+                half3 wTangent = UnityObjectToWorldDir(v.tangent.xyz);
+                half tangentSign = v.tangent.w * unity_WorldTransformParams.w;
+                half3 wBitangent = cross(wNormal, wTangent) * tangentSign;
+                o.tspace0 = half3(wTangent.x, wBitangent.x, wNormal.x);
+                o.tspace1 = half3(wTangent.y, wBitangent.y, wNormal.y);
+                o.tspace2 = half3(wTangent.z, wBitangent.z, wNormal.z);
+
 				return o;
 			}
 			// this shader must be exactly identical to the one in PhongShader.shader except reference to lightdirection and cameraPos
 			fixed4 landscapeFrag(vertOutLandscape v, float3 lightDirection, float3 cameraPos)
 			{
+				// sample the normal map, and decode from the Unity encoding
+                half3 tnormal = UnpackNormal(tex2D(_BumpMap, v.uv));
+				half3 worldNormal;
+                worldNormal.x = dot(v.tspace0, tnormal);
+                worldNormal.y = dot(v.tspace1, tnormal);
+                worldNormal.z = dot(v.tspace2, tnormal);
+
+				v.normal = worldNormal;
+
 				// dot product will give ||a|| ||b|| cos(theta)
 				// as both a and b are unit vector (i normalized them)
 				// dot(...) will return cos(theta)
