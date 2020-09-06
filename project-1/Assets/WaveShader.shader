@@ -186,7 +186,7 @@ Shader "Unlit/WaveShader"
 					// return fixed4(1, 0, 0, 1);
 					reflection = getLandscapeColor(t, intersection, v.lightDirection, v.cameraPos);
 				} else {
-					reflection = fixed4(104.0/256, 131.0/256, 170.0/256, 1);
+					reflection = fixed4(104.0/256, 131.0/256, 170.0/256, 1) * max(normalize(v.lightDirection).y, 0);
 				}
 
 				float3 refractDir = refract(viewDir, normal, 1/1.333);
