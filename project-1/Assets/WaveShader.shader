@@ -116,14 +116,15 @@ Shader "Unlit/WaveShader"
 			/* + _Time.y*/
 				// return sin(v.x*25 + _Time.y)/500 + offset;
 				// return offset;
-				float2 seeds[100];
-				for (uint i = 0; i < 10; i++) {
-					for (uint j = 0; j < 10; j++) {
-						seeds[i*10 + j] = float2(i, j) / 10 * landscapeSideLength;
+				const uint seedsSize = 8;
+				float2 seeds[seedsSize * seedsSize];
+				for (uint i = 0; i < seedsSize; i++) {
+					for (uint j = 0; j < seedsSize; j++) {
+						seeds[i*seedsSize + j] = float2(i, j) / seedsSize * landscapeSideLength;
 					}
 				}
 				float delta = 0;
-				for (i = 0; i < 100; i++) {
+				for (i = 0; i < seedsSize * seedsSize; i++) {
 					delta += sin(distance(seeds[i], v.xz) * 250 + _Time.y) / 25;
 					delta += sin(distance(seeds[i], v.xz) * 50 + _Time.y) / 5;
 					delta += sin(distance(seeds[i], v.xz) * 10 + _Time.y);
