@@ -108,14 +108,28 @@ Shader "Unlit/WaveShader"
 				o.lightDirection = mul(worldToLandscape, _WorldSpaceLightPos0);
 				return o;
 			}
-			// i hope this place holder fuction get replaced by something more realistic by someone who's not me
+
 			float getY(float3 v) { // displacement can only be in the y direction and 
 			// must be directly assigned to v.vertex.y or else everything will break;
 			// damn too much coupling between functions for this thing.
 			// v.y should not be in this function
 			/* + _Time.y*/
-				return sin(v.x*10 + _Time.y)/200 + offset;
-				return offset;
+				// return sin(v.x*25 + _Time.y)/500 + offset;
+				// return offset;
+				float2 seeds[100];
+				for (uint i = 0; i < 10; i++) {
+					for (uint j = 0; j < 10; j++) {
+						seeds[i*10 + j] = float2(i, j) / 10 * landscapeSideLength;
+					}
+				}
+				float delta = 0;
+				for (i = 0; i < 100; i++) {
+					delta += sin(distance(seeds[i], v.xz) * 250 + _Time.y) / 25;
+					delta += sin(distance(seeds[i], v.xz) * 50 + _Time.y) / 5;
+					delta += sin(distance(seeds[i], v.xz) * 10 + _Time.y);
+					delta += sin(distance(seeds[i], v.xz) * 2 + _Time.y) * 5;
+				}
+				return offset + delta / 5000;
 			}
 
 			float3 getNormal(float3 v0, float3 v1, float3 v2) {
@@ -181,13 +195,12 @@ Shader "Unlit/WaveShader"
 
 					refraction = 
 						getLandscapeColor(t, intersection, v.lightDirection, v.cameraPos)
-						* pow(0.5, distance(intersection, v.positionLandscape))
-						* pow(0.5, offset - intersection.y + 1);
+						* pow(0.5, distance(intersection, v.positionLandscape) + (offset - intersection.y));
 				} else {
 					refraction = fixed4(104.0/256, 131.0/256, 170.0/256, 1) / 2;
 				}
 
-				return fixed4(refraction + reflection * 0.5, 1);
+				return fixed4(refraction * 0.5 + reflection * 0.5, 1);
 			}
 
 

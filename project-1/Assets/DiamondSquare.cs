@@ -60,13 +60,12 @@ public class DiamondSquare : MonoBehaviour
 
         Vector3[] vertices = GenerateVectors(iterations);
         m.vertices = vertices;
+        updateMaxMinY(vertices);
+
         Color[] colors =  new Color[vertices.Length];
-        float[] maxMinY = getMaxMinY(vertices);
-        float maxMinYDiff = maxMinY[0] - maxMinY[1];
-        float minY = maxMinY[1];
         for (int i = 0; i < colors.Length; i++)
         {
-            colors[i] = this.GetColor(vertices[i].y, maxMinY);
+            colors[i] = this.GetColor(vertices[i].y);
         }
         m.colors = colors;
         int[] triangles = GenerateTriangles(vertices);
@@ -84,9 +83,12 @@ public class DiamondSquare : MonoBehaviour
         return m;
     }
 
-    private float[] getMaxMinY(Vector3[] vertices) {
-        float maxY = vertices[0].y;
-        float minY = vertices[0].y;
+    private float maxY, minY;
+    public float getMaxY() { return maxY; }
+    public float getMinY() { return minY; }
+    private void updateMaxMinY(Vector3[] vertices) {
+        maxY = vertices[0].y;
+        minY = vertices[0].y;
         foreach (Vector3 vertex in vertices) {
             if (vertex.y > maxY) {
                 maxY = vertex.y;
@@ -95,7 +97,6 @@ public class DiamondSquare : MonoBehaviour
                 minY = vertex.y;
             }
         }
-        return new float[] {maxY, minY};
     }
 
     // this function was written before i know RecalculateNormals() exists
@@ -253,13 +254,13 @@ public class DiamondSquare : MonoBehaviour
         return triangles;
     }
 
-    private Color GetColor(float height, float[] maxMinY){
+    private Color GetColor(float height){
         Gradient gradient = new Gradient();
         GradientAlphaKey[] gradientAlphaKeys = new GradientAlphaKey[4];
         GradientColorKey[] gradientColorKeys = new GradientColorKey[4];
 
-        float maxMinYDiff = maxMinY[0] - maxMinY[1];
-        float heightToTime = (height - maxMinY[1])/maxMinYDiff;
+        float maxMinYDiff = getMaxY() - getMinY();
+        float heightToTime = (height - getMinY())/maxMinYDiff;
 
         gradientColorKeys[0].color = new Color(231f/255,196f/255,150f/255);
         gradientColorKeys[0].time = 0.41f;
