@@ -217,7 +217,7 @@ The reason I was able to do ray tracing for this landscape is the fact that if y
 When iterating through everything above and below the ray, I did it on a per square basis instead of per triangle. This is because most of the time if the ray goes through one of the triangle that form the square, it'll go through the other one as well and also frankly I just couldn't be bothered... 
 I found a C++ implementation of the Moller-Trumbore intersection (apparently that's the best one we have) on wikipedia at https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm and I ported it to HLSL.
 
-## Bump Map :map:
+## Bump Map :world_map:
 
 We decided to use a bump map to create some textures for the fractal landscape instead of it being flat. We sourced a texture bump map from the Asset Store and applied it. In order to make the bump map apply the illumination model we had to recalculate the surface normals, taking into account the changes the bump map would apply.
 
