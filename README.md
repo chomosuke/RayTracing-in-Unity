@@ -207,14 +207,19 @@ void Start()
 
 I imagine that in the real world, there will be many waves traveling in random directions where each of them have a different amplitude and wave length. 
 To simulate this, I had 64 seeds acting as the origin of the waves evenly spread across the water surface. 
+
 From each origin there are 4 waves constantly going outwards with an amplitude of 5, 1, 0.2, 0.04 and wavelength of 0.5, 0.1, 0.02, 0.004. 
+
 After I tried that I realized that the waves were too strong, and the reflection and refraction of the water were very distorted, so I divided the amplitude by 5000 to make the water look better.
 
 ## Ray Tracing for reflection and refraction of water :bulb:
 
 Ok so it's not recursive ray tracing. After the reflection and refraction from the water I used vertex and fragment shaders copied from PhongShader.shader (with slight modification) to render the color for the pixel (using data passing into waveshader as uniforms). 
+
 The reason I was able to do ray tracing for this landscape is the fact that if you look directly from the top in isotropic view you'll realize that the wireframe of the landscape forms a grid. This makes sense because of the way the diamondsquare algorithm works. Therefore to check which triangle each ray hits, we do not have to iterate through all of the triangles for the landscape, but only the one directly above or below it (i.e. the ones it goes through ignoring the y axis). This reduces the time complexity from O(n) to O(sqrt(n)) (n being the number of triangles in the landscape). 
+
 When iterating through everything above and below the ray, I did it on a per square basis instead of per triangle. This is because most of the time if the ray goes through one of the triangle that form the square, it'll go through the other one as well and also frankly I just couldn't be bothered... 
+
 I found a C++ implementation of the Moller-Trumbore intersection (apparently that's the best one we have) on wikipedia at https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm and I ported it to HLSL.
 
 ## Bump Map :world_map:
