@@ -32,6 +32,7 @@ Shader "Unlit/WaveShader"
 			uniform int numOfVerticesOnPlaneEdge;
 			uniform float planeSize; 
 			uniform float offset;
+			uniform int enableRayTracing;
 
 			// uniform for PhongShader
 			uniform float n;
@@ -105,7 +106,7 @@ Shader "Unlit/WaveShader"
 				o.positionObject = v.vertex.xyz;
 				o.positionLandscape = mul(worldToLandscape, mul(unity_ObjectToWorld, o.positionObject));
 				o.cameraPos = mul(worldToLandscape, _WorldSpaceCameraPos);
-				o.lightDirection = mul(worldToLandscape, _WorldSpaceLightPos0);
+				o.lightDirection = mul(worldToLandscape, _WorldSpaceLightPos0 - o.vertex);
 				return o;
 			}
 
@@ -130,7 +131,7 @@ Shader "Unlit/WaveShader"
 					delta += sin(distance(seeds[i], v.xz) * 10 + _Time.y);
 					delta += sin(distance(seeds[i], v.xz) * 2 + _Time.y) * 5;
 				}
-				return offset + delta / 5000;
+				return offset + delta / 4000;
 			}
 
 			float3 getNormal(float3 v0, float3 v1, float3 v2) {
@@ -165,43 +166,86 @@ Shader "Unlit/WaveShader"
 			// Implementation of the fragment shader
 			fixed4 frag(vertOut v) : SV_Target {
 				
-				// only render when pixel is visible i.e. don't render if pixel is under the landscape
-				if (v.positionLandscape.y + 0.2 < // TODO: find a good value other than 0.2 using parameters
-					tex2D(landscapeVertices, v.positionObject.xz/landscapeSideLength).y)
-					discard;
-				
-				// per pixel normal
-				float3 normal = getNormal(v.positionObject);
+				//if (enableRayTracing == 1) {
+					// only render when pixel is visible i.e. don't render if pixel is under the landscape
+					if (v.positionLandscape.y + 0.2 < // TODO: find a good value other than 0.2 using parameters
+						tex2D(landscapeVertices, v.positionObject.xz/landscapeSideLength).y)
+						discard;
+					
+					// per pixel normal
+					float3 normal = getNormal(v.positionObject);
 
-				// everything from this point on is in landscape space
-				normal = normalize(mul(worldToLandscape, mul(unity_ObjectToWorld, normal)));
+					// everything from this point on is in landscape space
+					normal = normalize(mul(worldToLandscape, mul(unity_ObjectToWorld, normal)));
 
-				float3 viewDir = v.positionLandscape - v.cameraPos;
-				float3 reflectionDir = reflect(viewDir, normal);
-				
-				float3 intersection;
-				textCoords t = findTriangle(reflectionDir, v.positionLandscape, intersection);
-				fixed3 reflection;
-				if (t.coord1.x != -1) {
-					// return fixed4(1, 0, 0, 1);
-					reflection = getLandscapeColor(t, intersection, v.lightDirection, v.cameraPos);
-				} else {
-					reflection = fixed4(104.0/256, 131.0/256, 170.0/256, 1) * max(normalize(v.lightDirection).y, 0);
-				}
+					float3 viewDir = v.positionLandscape - v.cameraPos;
+					float3 reflectionDir = reflect(viewDir, normal);
+					
+					float3 intersection;
+					textCoords t = findTriangle(reflectionDir, v.positionLandscape, intersection);
+					fixed3 reflection;
+					if (t.coord1.x != -1) {
+						// return fixed4(1, 0, 0, 1);
+						reflection = getLandscapeColor(t, intersection, v.lightDirection, v.cameraPos);
+					} else {
+						reflection = fixed4(104.0/256, 131.0/256, 170.0/256, 1) * max(normalize(v.lightDirection).y, 0);
+					}
 
-				float3 refractDir = refract(viewDir, normal, 1/1.333);
-				t = findTriangle(refractDir, v.positionLandscape, intersection);
-				fixed3 refraction;
-				if (t.coord1.x != -1) {
+					float3 refractDir = refract(viewDir, normal, 1/1.333);
+					t = findTriangle(refractDir, v.positionLandscape, intersection);
+					fixed3 refraction;
+					if (t.coord1.x != -1) {
 
-					refraction = 
-						getLandscapeColor(t, intersection, v.lightDirection, v.cameraPos)
-						* pow(0.5, distance(intersection, v.positionLandscape) + (offset - intersection.y));
-				} else {
-					refraction = fixed4(104.0/256, 131.0/256, 170.0/256, 1) / 2;
-				}
+						refraction = 
+							getLandscapeColor(t, intersection, v.lightDirection, v.cameraPos)
+							* pow(0.5, distance(intersection, v.positionLandscape) + (offset - intersection.y));
+					} else {
+						refraction = fixed4(104.0/256, 131.0/256, 170.0/256, 1) / 2;
+					}
 
-				return fixed4(refraction * 0.5 + reflection * 0.5, 1);
+					return fixed4(refraction * 0.5 + reflection * 0.5, 1);
+
+
+				//}
+				/*else {
+		
+					// sample the normal map, and decode from the Unity encoding
+					float3 tnormal = getNormal(v.positionObject);
+					float3 worldNormal;
+					worldNormal.x = dot(v.tspace0, tnormal);
+					worldNormal.y = dot(v.tspace1, tnormal);
+					worldNormal.z = dot(v.tspace2, tnormal);
+
+					v.normal = worldNormal;
+
+					// dot product will give ||a|| ||b|| cos(theta)
+					// as both a and b are unit vector (i normalized them)
+					// dot(...) will return cos(theta)
+					// in case of theta larger than 90 degrees cos(theta) will be smaller than 0
+					// that isn't very acceptable cause theta > 90 just mean the light is on the other side
+					// so hence max(dot(...), 0)
+					float diffuse = max(dot(normalize(v.normal), normalize(lightDirection)), 0.0);
+					diffuse *= 1.0-ambient; // this is so that diffuse + ambient <= 1
+
+					float3 viewDir = v.position - cameraPos;
+					float3 reflectionDir = reflect(lightDirection, -v.normal);
+					
+					float specular = dot(normalize(viewDir), normalize(reflectionDir));
+					if (specular <= 0.0) {
+						// one thing very fustrating is that this pow function misbehave when the first argument is 0
+						specular = 0.0;
+					} else {
+						specular = pow(specular, n) * specularFraction;
+					}
+					float4 specularComponent = {specular, specular, specular, 0};
+					
+					return v.color * (ambient + diffuse) + specularComponent;
+
+
+
+				}*/
+			
+
 			}
 
 

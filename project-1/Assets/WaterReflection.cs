@@ -11,6 +11,8 @@ public class WaterReflection : MonoBehaviour
     private DiamondSquare landscape;
     private MeshFilter meshFilter;
     private MeshRenderer renderer;
+    public bool setRayTracing = true;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -145,5 +147,12 @@ public class WaterReflection : MonoBehaviour
         renderer.material.SetFloat("specularFraction", landscape.specularFraction);
         renderer.material.SetMatrix("worldToLandscape", landscape.GetComponent<MeshRenderer>().worldToLocalMatrix);
         renderer.material.SetFloat("offset", landscape.getMinY() + (landscape.getMaxY() - landscape.getMinY()) * 0.43f);
+
+        if (setRayTracing == true) {
+            renderer.material.SetInt("enableRayTracing", 1); // Turn ray tracing on
+        }
+        else {
+            renderer.material.SetInt("enableRayTracing", 0); // Turn ray tracing off
+        }
     }
 }

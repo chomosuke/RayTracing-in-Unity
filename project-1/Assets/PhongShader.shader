@@ -67,7 +67,7 @@ Shader "Unlit/PhongShader"
                 o.tspace2 = half3(wTangent.z, wBitangent.z, wNormal.z);
 
 				// according to documentation Directional lights: (world space direction, 0). Other lights: (world space position, 1).
-				o.lightDirection = normalize(mul(unity_WorldToObject, _WorldSpaceLightPos0));
+				o.lightDirection = normalize(mul(unity_WorldToObject, _WorldSpaceLightPos0 - o.vertex));
 				o.cameraPos = mul(unity_WorldToObject, _WorldSpaceCameraPos);
 				return o;
 			}
