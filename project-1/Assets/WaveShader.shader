@@ -33,6 +33,7 @@ Shader "Unlit/WaveShader"
 			uniform float planeSize; 
 			uniform float offset;
 			uniform int enableRayTracing;
+			uniform float3 lightPos;
 
 			// uniform for PhongShader
 			uniform float n;
@@ -81,6 +82,8 @@ Shader "Unlit/WaveShader"
                 half3 tspace2 : TEXCOORD3;
 				float4 tangent : TANGENT;
 				float3 position : POSITION_IN_OBJECT_SPACE;
+				float3 lightDirection : LIGHT_DIRECTION_LANDSCAPE_SPACE;
+				float3 cameraPos : CAMERA_POSITION_LANDSCAPE_SPACE;
 			};
 
 			float getY(float3 v);
@@ -91,10 +94,10 @@ Shader "Unlit/WaveShader"
 							    float3 coord1, float3 coord2, float3 coord3,
 								out float3 intersection);
 								
-			fixed4 getLandscapeColor(textCoords t, float3 intersection, float3 lightDirection, float3 cameraPos);
+			fixed4 getLandscapeColor(textCoords t, float3 intersection);
 
 			vertOutLandscape landscapeVert(vertInLandscape v);
-			fixed4 landscapeFrag(vertOutLandscape v, float3 lightDirection, float3 cameraPos);
+			fixed4 landscapeFrag(vertOutLandscape v);
 
 			// Implementation of the vertex shader
 			vertOut vert(vertIn v)
@@ -108,7 +111,7 @@ Shader "Unlit/WaveShader"
 				o.cameraPos = mul(worldToLandscape, _WorldSpaceCameraPos);
 
 				// normalize for rasterization
-				o.lightDirection = normalize(o.positionLandscape - mul(worldToLandscape, _WorldSpaceLightPos0));
+				o.lightDirection = normalize(lightPos - v.vertex);
 				return o;
 			}
 
@@ -189,7 +192,7 @@ Shader "Unlit/WaveShader"
 					fixed3 reflection;
 					if (t.coord1.x != -1) {
 						// return fixed4(1, 0, 0, 1);
-						reflection = getLandscapeColor(t, intersection, v.lightDirection, v.cameraPos);
+						reflection = getLandscapeColor(t, intersection);
 					} else {
 						reflection = fixed4(104.0/256, 131.0/256, 170.0/256, 1) * max(normalize(v.lightDirection).y, 0);
 					}
@@ -200,7 +203,7 @@ Shader "Unlit/WaveShader"
 					if (t.coord1.x != -1) {
 
 						refraction = 
-							getLandscapeColor(t, intersection, v.lightDirection, v.cameraPos)
+							getLandscapeColor(t, intersection)
 							* pow(0.5, distance(intersection, v.positionLandscape) + (offset - intersection.y));
 					} else {
 						refraction = fixed4(104.0/256, 131.0/256, 170.0/256, 1) / 2;
@@ -463,7 +466,7 @@ Shader "Unlit/WaveShader"
 			// 	return color;
 			// }
 
-			fixed4 getLandscapeColor(textCoords t, float3 intersection, float3 lightDirection, float3 cameraPos) {
+			fixed4 getLandscapeColor(textCoords t, float3 intersection) {
 				// linearly interpolate
 				vertInLandscape vIn;
 				half2 coords[3];
@@ -505,6 +508,8 @@ Shader "Unlit/WaveShader"
 				vOutIn.tspace1 = half3(0, 0, 0);
 				vOutIn.tspace2 = half3(0, 0, 0);
 				vOutIn.tangent = float4(0, 0, 0, 0);
+				vOutIn.lightDirection = float3(0, 0, 0);
+				vOutIn.cameraPos = float3(0, 0, 0);
 				for (i = 0; i < 3; i++) {
 					vOutIn.vertex += vOut[i].vertex * w[i];
 					vOutIn.color += vOut[i].color * w[i];
@@ -515,21 +520,23 @@ Shader "Unlit/WaveShader"
 					vOutIn.tspace1 += vOut[i].tspace1 * w[i];
 					vOutIn.tspace2 += vOut[i].tspace2 * w[i];
 					vOutIn.tangent += vOut[i].tangent * w[i];
+					vOutIn.lightDirection += vOut[i].lightDirection * w[i];
+					vOutIn.cameraPos += vOut[i].cameraPos * w[i];
 				}
 
-				return landscapeFrag(vOutIn, lightDirection, cameraPos);
+				return landscapeFrag(vOutIn);
 			}
 			
 			// this shader must be exactly identical to the one in PhongShader.shader
 			vertOutLandscape landscapeVert(vertInLandscape v)
 			{
 				vertOutLandscape o;
-
+				
 				o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
 				o.color = v.color;
 				o.normal = v.normal;
 				o.position = v.vertex;
-
+				
 				o.uv = v.uv;
 				o.tangent = v.tangent;
 				half3 wNormal = UnityObjectToWorldNormal(o.normal);
@@ -540,11 +547,15 @@ Shader "Unlit/WaveShader"
                 o.tspace1 = half3(wTangent.y, wBitangent.y, wNormal.y);
                 o.tspace2 = half3(wTangent.z, wBitangent.z, wNormal.z);
 
+				o.lightDirection = normalize(lightPos - v.vertex);
+				o.cameraPos = mul(unity_WorldToObject, _WorldSpaceCameraPos);
 				return o;
 			}
 			// this shader must be exactly identical to the one in PhongShader.shader except reference to lightdirection and cameraPos
-			fixed4 landscapeFrag(vertOutLandscape v, float3 lightDirection, float3 cameraPos)
+			fixed4 landscapeFrag(vertOutLandscape v)
 			{
+				v.lightDirection = normalize(v.lightDirection);
+
 				// sample the normal map, and decode from the Unity encoding
                 half3 tnormal = UnpackNormal(tex2D(_BumpMap, v.uv));
 				half3 worldNormal;
@@ -560,11 +571,11 @@ Shader "Unlit/WaveShader"
 				// in case of theta larger than 90 degrees cos(theta) will be smaller than 0
 				// that isn't very acceptable cause theta > 90 just mean the light is on the other side
 				// so hence max(dot(...), 0)
-				float diffuse = max(dot(normalize(v.normal), normalize(lightDirection)), 0.0);
+				float diffuse = max(dot(normalize(v.normal), normalize(v.lightDirection)), 0.0);
 				diffuse *= 1.0-ambient; // this is so that diffuse + ambient <= 1
 
-				float3 viewDir = v.position - cameraPos;
-				float3 reflectionDir = reflect(lightDirection, -v.normal);
+				float3 viewDir = v.position - v.cameraPos;
+				float3 reflectionDir = reflect(v.lightDirection, -v.normal);
 				
 				float specular = dot(normalize(viewDir), normalize(reflectionDir));
 				if (specular <= 0.0) {
@@ -573,7 +584,7 @@ Shader "Unlit/WaveShader"
 				} else {
 					specular = pow(specular, n) * specularFraction;
 				}
-				float4 specularComponent = {specular, specular, specular, 0};
+				float4 specularComponent = {specular, specular, specular, 0 };
 				
 				return v.color * (ambient + diffuse) + specularComponent;
 			}
