@@ -10,6 +10,7 @@ public class DiamondSquare : MonoBehaviour
     public int iterations;
     public float n;
     public GameObject water;
+    public GameObject lightSource;
 
     [Range(0.0f, 1.0f)]
     public float specularFraction;
@@ -39,6 +40,7 @@ public class DiamondSquare : MonoBehaviour
         renderer.material.SetFloat("n", n);
         renderer.material.SetFloat("ambient", ambient);
         renderer.material.SetFloat("specularFraction", specularFraction);
+        renderer.material.SetVector("lightPos", lightSource.transform.position - transform.position);
         if (Input.GetKeyDown(KeyCode.Space)){
             landScapeMesh.mesh = this.CreateLandScapeMesh(iterations);
             renderer.material.SetTexture("_BumpMap", _BumpMap);

@@ -106,7 +106,9 @@ Shader "Unlit/WaveShader"
 				o.positionObject = v.vertex.xyz;
 				o.positionLandscape = mul(worldToLandscape, mul(unity_ObjectToWorld, o.positionObject));
 				o.cameraPos = mul(worldToLandscape, _WorldSpaceCameraPos);
-				o.lightDirection = mul(worldToLandscape, _WorldSpaceLightPos0 - o.vertex);
+
+				// normalize for rasterization
+				o.lightDirection = normalize(o.positionLandscape - mul(worldToLandscape, _WorldSpaceLightPos0));
 				return o;
 			}
 
@@ -165,7 +167,8 @@ Shader "Unlit/WaveShader"
 			
 			// Implementation of the fragment shader
 			fixed4 frag(vertOut v) : SV_Target {
-				
+				v.lightDirection = normalize(v.lightDirection);
+
 				//if (enableRayTracing == 1) {
 					// only render when pixel is visible i.e. don't render if pixel is under the landscape
 					if (v.positionLandscape.y + 0.2 < // TODO: find a good value other than 0.2 using parameters

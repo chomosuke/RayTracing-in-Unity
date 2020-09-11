@@ -21,6 +21,7 @@ Shader "Unlit/PhongShader"
 			uniform float n;
 			uniform float ambient;
 			uniform float specularFraction;
+			uniform float3 lightPos;
 
 			struct vertIn
 			{
@@ -66,8 +67,7 @@ Shader "Unlit/PhongShader"
                 o.tspace1 = half3(wTangent.y, wBitangent.y, wNormal.y);
                 o.tspace2 = half3(wTangent.z, wBitangent.z, wNormal.z);
 
-				// according to documentation Directional lights: (world space direction, 0). Other lights: (world space position, 1).
-				o.lightDirection = normalize(mul(unity_WorldToObject, _WorldSpaceLightPos0 - o.vertex));
+				o.lightDirection = normalize(lightPos - v.vertex);
 				o.cameraPos = mul(unity_WorldToObject, _WorldSpaceCameraPos);
 				return o;
 			}
@@ -75,6 +75,7 @@ Shader "Unlit/PhongShader"
 			// Implementation of the fragment shader
 			fixed4 frag(vertOut v) : SV_Target
 			{
+				v.lightDirection = normalize(v.lightDirection);
 
 				// sample the normal map, and decode from the Unity encoding
                 half3 tnormal = UnpackNormal(tex2D(_BumpMap, v.uv));

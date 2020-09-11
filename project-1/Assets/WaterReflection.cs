@@ -12,6 +12,7 @@ public class WaterReflection : MonoBehaviour
     private MeshFilter meshFilter;
     private MeshRenderer renderer;
     public bool setRayTracing = true;
+    public GameObject lightSource;
 
     // Start is called before the first frame update
     void Start()
@@ -147,6 +148,7 @@ public class WaterReflection : MonoBehaviour
         renderer.material.SetFloat("specularFraction", landscape.specularFraction);
         renderer.material.SetMatrix("worldToLandscape", landscape.GetComponent<MeshRenderer>().worldToLocalMatrix);
         renderer.material.SetFloat("offset", landscape.getMinY() + (landscape.getMaxY() - landscape.getMinY()) * 0.43f);
+        renderer.material.SetVector("lightPos", lightSource.transform.position - transform.position);
 
         if (setRayTracing == true) {
             renderer.material.SetInt("enableRayTracing", 1); // Turn ray tracing on
