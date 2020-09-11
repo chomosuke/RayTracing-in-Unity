@@ -74,7 +74,6 @@ public class CameraMovement : MonoBehaviour
             // bottomleft
             
             // gets group of 4 vectors around closest vector
-            // TODO: Add checks to see if at edge/outside array, need to check if x & z are the correct way round
             Vector3[] closestPositions = {
                 landscapeVertices[closestZ * gridLength + closestX], // closest point
                 landscapeVertices [(closestZ * gridLength + closestX) + 1], 
