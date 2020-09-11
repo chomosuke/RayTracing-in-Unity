@@ -11,6 +11,7 @@ public class CameraMovement : MonoBehaviour
 
     private Vector3[] landscapeVertices;
     private float maxY;
+    private float minY;
     private float gridSize;
 
 
@@ -29,8 +30,10 @@ public class CameraMovement : MonoBehaviour
             positionSet = true;
 
             landscapeVertices = landscape.GetComponent<MeshFilter>().mesh.vertices;
-            maxY = landscape.GetComponent<DiamondSquare>().getMaxY();
             gridSize = landscape.GetComponent<DiamondSquare>().sizeOfLandscape;
+            maxY = landscape.GetComponent<DiamondSquare>().getMaxY();
+            minY = GameObject.Find("Water").transform.position.y;
+        
 
             this.gameObject.transform.position = landscapeVertices[landscapeVertices.Length/2];
             this.gameObject.transform.position += Vector3.up * maxY;
@@ -56,17 +59,18 @@ public class CameraMovement : MonoBehaviour
     }
 
     bool landscape_collision (Vector3 newPosition) {
+        float threshold = 0.8f;
         
         // if camera is at the edge of the map
         if(newPosition.x > gridSize || newPosition.x < 0 || newPosition.z > gridSize || newPosition.z < 0 
-             || newPosition.y > 2*maxY || newPosition.y < 0) {
+             || newPosition.y > 2*maxY || newPosition.y <= (minY + threshold)) {
             return true;
         } else {
             // number of vectors in one row of grid
             int gridLength = (int) Math.Sqrt(landscapeVertices.Length);
             // distance between each vector
             float unitLength = gridSize / (gridLength - 1);
-            float threshold = 0.8f;
+            
 
             // finds closest vector in landscape to new position 
             int closestX = (int) (newPosition.x/unitLength);
