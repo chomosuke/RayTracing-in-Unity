@@ -211,7 +211,7 @@ Shader "Unlit/WaveShader"
 				}
 				else {
 
-					float4 color = float4(1, 1, 1, 1);
+					float4 color = float4(51.0/256, 171.0/256, 255.0/256, 1);
 
 					float3 normal = getNormal(v.positionObject);
 
@@ -248,7 +248,7 @@ Shader "Unlit/WaveShader"
 							getLandscapeColor(t, intersection, v.lightDirection, v.cameraPos)
 							* pow(0.5, distance(intersection, v.positionLandscape) + (offset - intersection.y));
 					} else {
-						refraction = float4(104.0/256, 131.0/256, 170.0/256, 1) / 2;
+						refraction = float4(51.0/256, 171.0/256, 255.0/256, 1) / 2;
 					}
 
 

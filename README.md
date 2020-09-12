@@ -20,7 +20,7 @@
 | Shuang Li    | Phong shader, Diamond Square, Water Shader (the one with reflection and refraction), ReadMe | Done |
 | Jasmine Bond | Camera Control, Diamond Square, ReadMe      | Not Done |
 | Ju Wey Tan   | Bump Map, Colouring, Diamond Square, ReadMe | Done |
-| Jasper Ng    | Camera Control, Water Shader ?, ReadMe      | Not done |
+| Jasper Ng    | Camera Control, Water Shader, ReadMe      | Done |
 
 ## General info
 This is project - 1 where we were tasked with generating a fractal landscape in Unity using the Diamond Square Algorithm. We also had to write our own custom CG/HLSL shader for the landscape with the Phong illumination model, and a water shader, where we have included the option for ray tracing. We have also applied a bump map to the landscape mesh.
@@ -221,6 +221,8 @@ The reason I was able to do ray tracing for this landscape is the fact that if y
 When iterating through everything above and below the ray, I did it on a per square basis instead of per triangle. This is because most of the time if the ray goes through one of the triangle that form the square, it'll go through the other one as well and also frankly I just couldn't be bothered... 
 
 I found a C++ implementation of the Moller-Trumbore intersection (apparently that's the best one we have) on wikipedia at https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm and I ported it to HLSL.
+
+Users will be given an option to switch between different settings for the water shader, one more graphically-intensive than the other. For the water setting without ray tracing, a standard Phong Illumination model was used to render the water, done by calculating the ambient component, diffuse component, and specular component.
 
 ## Bump Map :world_map:
 
