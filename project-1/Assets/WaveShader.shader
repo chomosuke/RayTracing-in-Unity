@@ -211,7 +211,8 @@ Shader "Unlit/WaveShader"
 				}
 				else {
 
-					float4 color = float4(51.0/256, 171.0/256, 255.0/256, 1);
+					//float4 color = float4(51.0/256, 171.0/256, 255.0/256, 1);
+					float4 color = float4(0.0, 128.0/256, 255.0/255, 1);
 
 					float3 normal = getNormal(v.positionObject);
 
@@ -221,7 +222,7 @@ Shader "Unlit/WaveShader"
 					// Ambient RGB intensities passed as uniform
 
 					// Calculating RGB diffuse reflections
-					float fAtt = 0.05;
+					float fAtt = 0.1;
 					float Kd = 1;
 					float3 L = normalize(v.lightDirection);
 					float LdotN = dot(L, normal);
@@ -235,38 +236,9 @@ Shader "Unlit/WaveShader"
 
 					float3 specular = fAtt * color.rgb * Ks * pow(saturate(dot(V, R)), specN);
 
-					// Calculating refraction
-
-					
-					float3 refractDir = refract(V, normal, 1/1.333);
-					float3 intersection;
-					textCoords t = findTriangle(refractDir, v.positionLandscape, intersection);
-					float3 refraction;
-					if (t.coord1.x != -1) {
-
-						refraction = 
-							getLandscapeColor(t, intersection, v.lightDirection, v.cameraPos)
-							* pow(0.5, distance(intersection, v.positionLandscape) + (offset - intersection.y));
-					} else {
-						refraction = float4(51.0/256, 171.0/256, 255.0/256, 1) / 2;
-					}
-
-
-					
-					/*float specular = dot(normalize(viewDir), normalize(reflectionDir));
-					if (specular <= 0.0) {
-						// one thing very fustrating is that this pow function misbehave when the first argument is 0
-						specular = 0.0;
-					} else {
-						specular = pow(specular, n) * specularFraction;
-					}
-					float4 specularComponent = {specular, specular, specular, 0};
-					
-					return v.color * (ambient + diffuse) + specularComponent;*/
-
 					// Combine Phong Illumination model components
 					float4 returnColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
-					returnColor.rgb = 0.1 * ambient + diffuse + specular + refraction;
+					returnColor.rgb = 0.1 * ambient + diffuse + specular;
 					returnColor.a = color.a;
 
 					return returnColor;

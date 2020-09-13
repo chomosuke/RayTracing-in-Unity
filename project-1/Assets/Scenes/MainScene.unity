@@ -197,7 +197,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   size: 10
   landscapeObject: {fileID: 1658723779}
-  setRayTracing: 1
+  setRayTracing: 0
   lightSource: {fileID: 1490544384}
 --- !u!4 &690556181
 Transform:
