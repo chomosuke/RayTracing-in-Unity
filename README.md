@@ -222,7 +222,42 @@ When iterating through everything above and below the ray, I did it on a per squ
 
 I found a C++ implementation of the Moller-Trumbore intersection (apparently that's the best one we have) on wikipedia at https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm and I ported it to HLSL.
 
-Users will be given an option to switch between different settings for the water shader, one more graphically-intensive than the other. For the water setting without ray tracing, a standard Phong Illumination model was used to render the water, done by calculating the ambient component, diffuse component, and specular component.
+Users will be given an option to switch between different settings for the water shader, one more graphically-intensive than the other. For the water setting without ray tracing, a standard Phong Illumination model was used to render the water, done by calculating the ambient component, diffuse component, and specular component. While this setting looks considerably worse, it satisfies the project requirements, while providing better performance if required. Implementation of this illumination model is shown below.
+
+```c#
+
+    float4 color = float4(0.0, 128.0/256, 255.0/255, 1);
+
+    float3 normal = getNormal(v.positionObject);
+
+    // everything from this point on is in landscape space
+    normal = normalize(mul(worldToLandscape, mul(unity_ObjectToWorld, normal)));
+
+    // Ambient RGB intensities passed as uniform
+
+    // Calculating RGB diffuse reflections
+    float fAtt = 0.1;
+    float Kd = 1;
+    float3 L = normalize(v.lightDirection);
+    float LdotN = dot(L, normal);
+    float3 diffuse = fAtt * color.rgb * Kd * saturate(LdotN);
+
+    // Calculating specular reflections
+    float Ks = 1;
+    float specN = 5;
+    float3 V = v.positionLandscape - v.cameraPos;
+    float3 R = reflect(v.lightDirection, -normal);
+
+    float3 specular = fAtt * color.rgb * Ks * pow(saturate(dot(V, R)), specN);
+
+    // Combine Phong Illumination model components
+    float4 returnColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    returnColor.rgb = 0.1 * ambient + diffuse + specular;
+    returnColor.a = color.a;
+
+    return returnColor;
+    
+```
 
 ## Bump Map :world_map:
 
