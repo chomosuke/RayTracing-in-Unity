@@ -225,7 +225,8 @@ Shader "Unlit/WaveShader"
 					// everything from this point on is in landscape space
 					normal = normalize(mul(worldToLandscape, mul(unity_ObjectToWorld, normal)));
 		
-					// Ambient RGB intensities passed as uniform
+					// Calculating ambient RGB intensities
+					float3 amb = Ka * ambient * color.rgb;
 
 					// Calculating RGB diffuse reflections
 					float3 L = normalize(v.lightDirection);
@@ -240,7 +241,7 @@ Shader "Unlit/WaveShader"
 
 					// Combine Phong Illumination model components
 					float4 returnColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
-					returnColor.rgb = Ka * ambient + diffuse + specular;
+					returnColor.rgb = amb + diffuse + specular;
 					returnColor.a = color.a;
 
 					return returnColor;

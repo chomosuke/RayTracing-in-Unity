@@ -199,6 +199,13 @@ MonoBehaviour:
   landscapeObject: {fileID: 1658723779}
   setRayTracing: 0
   lightSource: {fileID: 1490544384}
+  color: {x: 0, y: 0.5, z: 1, w: 1}
+  Ka: 1
+  Kd: 0
+  fAtt: 1
+  Ks: 0
+  specN: 5
+  waveHeight: 0.001
 --- !u!4 &690556181
 Transform:
   m_ObjectHideFlags: 0
