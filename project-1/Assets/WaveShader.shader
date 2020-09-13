@@ -35,6 +35,12 @@ Shader "Unlit/WaveShader"
 			uniform float offset;
 			uniform int enableRayTracing;
 			uniform float3 lightPos;
+			uniform float4 color;
+			uniform float Ka;
+			uniform float Kd;
+			uniform float fAtt;
+			uniform float Ks;
+			uniform float specN;
 
 			// uniform for PhongShader
 			uniform float n;
@@ -211,9 +217,6 @@ Shader "Unlit/WaveShader"
 				}
 				else {
 
-					//float4 color = float4(51.0/256, 171.0/256, 255.0/256, 1);
-					float4 color = float4(0.0, 128.0/256, 255.0/255, 1);
-
 					float3 normal = getNormal(v.positionObject);
 
 					// everything from this point on is in landscape space
@@ -222,15 +225,11 @@ Shader "Unlit/WaveShader"
 					// Ambient RGB intensities passed as uniform
 
 					// Calculating RGB diffuse reflections
-					float fAtt = 0.1;
-					float Kd = 1;
 					float3 L = normalize(v.lightDirection);
 					float LdotN = dot(L, normal);
 					float3 diffuse = fAtt * color.rgb * Kd * saturate(LdotN);
 
 					// Calculating specular reflections
-					float Ks = 1;
-					float specN = 5;
 					float3 V = v.positionLandscape - v.cameraPos;
 					float3 R = reflect(v.lightDirection, -normal);
 
@@ -238,7 +237,7 @@ Shader "Unlit/WaveShader"
 
 					// Combine Phong Illumination model components
 					float4 returnColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
-					returnColor.rgb = 0.1 * ambient + diffuse + specular;
+					returnColor.rgb = Ka * ambient + diffuse + specular;
 					returnColor.a = color.a;
 
 					return returnColor;

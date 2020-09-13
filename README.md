@@ -225,8 +225,16 @@ I found a C++ implementation of the Moller-Trumbore intersection (apparently tha
 Users will be given an option to switch between different settings for the water shader, one more graphically-intensive than the other. For the water setting without ray tracing, a standard Phong Illumination model was used to render the water, done by calculating the ambient component, diffuse component, and specular component. While this setting looks considerably worse, it satisfies the project requirements, while providing better performance if required. Implementation of this illumination model is shown below.
 
 ```c#
+    uniform float4 color;
+    uniform float Ka;
+    uniform float Kd;
+    uniform float fAtt;
+    uniform float Ks;
+    uniform float specN;
 
-    float4 color = float4(0.0, 128.0/256, 255.0/255, 1);
+    .
+    .
+    .
 
     float3 normal = getNormal(v.positionObject);
 
@@ -236,15 +244,11 @@ Users will be given an option to switch between different settings for the water
     // Ambient RGB intensities passed as uniform
 
     // Calculating RGB diffuse reflections
-    float fAtt = 0.1;
-    float Kd = 1;
     float3 L = normalize(v.lightDirection);
     float LdotN = dot(L, normal);
     float3 diffuse = fAtt * color.rgb * Kd * saturate(LdotN);
 
     // Calculating specular reflections
-    float Ks = 1;
-    float specN = 5;
     float3 V = v.positionLandscape - v.cameraPos;
     float3 R = reflect(v.lightDirection, -normal);
 
@@ -252,12 +256,14 @@ Users will be given an option to switch between different settings for the water
 
     // Combine Phong Illumination model components
     float4 returnColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
-    returnColor.rgb = 0.1 * ambient + diffuse + specular;
+    returnColor.rgb = Ka * ambient + diffuse + specular;
     returnColor.a = color.a;
 
     return returnColor;
     
 ```
+
+The colour and parameters of the Phong illumination model for the water were all passed as uniforms into the shader, which allows users to tinker with the values in the Unity editor. Firstly, the albedo was adjusted such that when the sun is fully under the landscape (i.e. it is nighttime), the water is not too bright (the default value of 1 would lead to washed out colours). Next, the reflectivity was adjusted such that when the sun rose over the landscape, the water wasn't washed out by whiteness from the sun. Finally, the specular parameters were left as default (Ks = 1; specN = 5), as it seemed to be the best setting. Finally the colour of the water was adjusted to an acceptable shade of blue. 
 
 ## Bump Map :world_map:
 

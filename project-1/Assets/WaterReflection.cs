@@ -13,6 +13,12 @@ public class WaterReflection : MonoBehaviour
     private MeshRenderer renderer;
     public bool setRayTracing = true;
     public GameObject lightSource;
+    public Vector4 color = new Vector4(0.0f, 0.5f, 1.0f, 1.0f);
+    public float Ka = 0.3f;
+    public float Kd = 0.1f;
+    public float fAtt = 1.0f;
+    public float Ks = 1.0f;
+    public float specN = 5.0f;
 
     // Start is called before the first frame update
     void Start()
@@ -24,6 +30,12 @@ public class WaterReflection : MonoBehaviour
         renderer.material.shader = Shader.Find("Unlit/WaveShader");
         renderer.material.SetInt("numOfVerticesOnPlaneEdge", planeMeshSize);
         renderer.material.SetFloat("planeSize", size);
+        renderer.material.SetVector("color", color);
+        renderer.material.SetFloat("Ka", Ka);
+        renderer.material.SetFloat("Kd", Kd);
+        renderer.material.SetFloat("fAtt", fAtt);
+        renderer.material.SetFloat("Ks", Ks);
+        renderer.material.SetFloat("specN", specN);
     }
 
     public void setLandscapeMesh(Mesh mesh) {
