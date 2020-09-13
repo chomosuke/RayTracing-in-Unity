@@ -19,6 +19,7 @@ public class WaterReflection : MonoBehaviour
     public float fAtt = 1.0f;
     public float Ks = 1.0f;
     public float specN = 5.0f;
+    public float waveHeight = 0.001f;
 
     // Start is called before the first frame update
     void Start()
@@ -161,6 +162,7 @@ public class WaterReflection : MonoBehaviour
         renderer.material.SetMatrix("worldToLandscape", landscape.GetComponent<MeshRenderer>().worldToLocalMatrix);
         renderer.material.SetFloat("offset", getOffset());
         renderer.material.SetVector("lightPos", lightSource.transform.position - transform.position);
+        renderer.material.SetFloat("waveHeight", waveHeight);
 
         if (setRayTracing == true) {
             renderer.material.SetInt("enableRayTracing", 1); // Turn ray tracing on
