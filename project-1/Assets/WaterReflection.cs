@@ -147,7 +147,7 @@ public class WaterReflection : MonoBehaviour
         renderer.material.SetFloat("ambient", landscape.ambient);
         renderer.material.SetFloat("specularFraction", landscape.specularFraction);
         renderer.material.SetMatrix("worldToLandscape", landscape.GetComponent<MeshRenderer>().worldToLocalMatrix);
-        renderer.material.SetFloat("offset", landscape.getMinY() + (landscape.getMaxY() - landscape.getMinY()) * 0.43f);
+        renderer.material.SetFloat("offset", getOffset());
         renderer.material.SetVector("lightPos", lightSource.transform.position - transform.position);
 
         if (setRayTracing == true) {
@@ -156,5 +156,9 @@ public class WaterReflection : MonoBehaviour
         else {
             renderer.material.SetInt("enableRayTracing", 0); // Turn ray tracing off
         }
+    }
+
+    public float getOffset() {
+        return landscape.getMinY() + (landscape.getMaxY() - landscape.getMinY()) * 0.43f;
     }
 }

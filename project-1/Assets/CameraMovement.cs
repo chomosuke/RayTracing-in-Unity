@@ -32,7 +32,8 @@ public class CameraMovement : MonoBehaviour
             landscapeVertices = landscape.GetComponent<MeshFilter>().mesh.vertices;
             gridSize = landscape.GetComponent<DiamondSquare>().sizeOfLandscape;
             maxY = landscape.GetComponent<DiamondSquare>().getMaxY();
-            minY = GameObject.Find("Water").transform.position.y;
+            minY = GameObject.Find("Water").transform.position.y
+             + GameObject.Find("Water").GetComponent<WaterReflection>().getOffset();
         
 
             this.gameObject.transform.position = landscapeVertices[landscapeVertices.Length/2];
@@ -59,11 +60,11 @@ public class CameraMovement : MonoBehaviour
     }
 
     bool landscape_collision (Vector3 newPosition) {
-        float threshold = 0.8f;
+        float threshold = 0.1f;
         
         // if camera is at the edge of the map
         if(newPosition.x > gridSize || newPosition.x < 0 || newPosition.z > gridSize || newPosition.z < 0 
-             || newPosition.y > 2*maxY || newPosition.y <= (minY + threshold)) {
+             || newPosition.y > maxY + gridSize || newPosition.y <= (minY + threshold)) {
             return true;
         } else {
             // number of vectors in one row of grid
