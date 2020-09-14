@@ -271,7 +271,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.01
   far clip plane: 1000
   field of view: 60
   orthographic: 0
@@ -472,9 +472,9 @@ MonoBehaviour:
   noise: 5
   sizeOfLandscape: 10
   iterations: 6
-  n: 100
+  n: 3
   water: {fileID: 690556179}
   lightSource: {fileID: 1490544384}
-  specularFraction: 0.336
-  ambient: 0.159
+  specularFraction: 0.032
+  ambient: 0.15
   _BumpMap: {fileID: 2800000, guid: e5895469fa6440e4a876bf0672599e59, type: 3}
