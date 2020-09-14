@@ -18,7 +18,7 @@
 | Name | Task | State |
 | :---         |     :---:      |          ---: |
 | Shuang Li    | Phong shader, Diamond Square, Water Shader (the one with reflection and refraction), ReadMe | Done |
-| Jasmine Bond | Camera Control, Diamond Square, ReadMe      | Not Done |
+| Jasmine Bond | Camera Control, Diamond Square, ReadMe      | Done |
 | Ju Wey Tan   | Bump Map, Colouring, Diamond Square, ReadMe | Done |
 | Jasper Ng    | Camera Control, Water Shader, ReadMe      | Done |
 
