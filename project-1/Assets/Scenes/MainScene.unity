@@ -204,7 +204,7 @@ MonoBehaviour:
   Kd: 0.5
   fAtt: 0.5
   Ks: 1
-  specN: 100
+  specN: 75
   waveHeight: 0.01
 --- !u!4 &690556181
 Transform:
