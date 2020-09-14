@@ -145,7 +145,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 337916842}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 76d4f91f6d374524585b44f51bd1ec83, type: 3}
   m_Name: 
@@ -472,9 +472,9 @@ MonoBehaviour:
   noise: 5
   sizeOfLandscape: 10
   iterations: 6
-  n: 100
+  n: 3
   water: {fileID: 690556179}
   lightSource: {fileID: 1490544384}
-  specularFraction: 0.336
-  ambient: 0.159
+  specularFraction: 0.032
+  ambient: 0.15
   _BumpMap: {fileID: 2800000, guid: e5895469fa6440e4a876bf0672599e59, type: 3}
