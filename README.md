@@ -155,13 +155,12 @@ Users are given the option of the changing the sensitivity and speed of the came
 
 For the boundaries of the landscape, we chose to have it controlled by the CameraMovement script. Every time the landscape is generated, the script retrieves the landscape mesh's vertices, and maxY from the DiamondSquare script. It also retrieves minY by obtaining the sum of the position of the 'Water' object, and the offset from the WaterReflection script.
 
-
 ```c#
-            landscapeVertices = landscape.GetComponent<MeshFilter>().mesh.vertices;
-            gridSize = landscape.GetComponent<DiamondSquare>().sizeOfLandscape;
-            maxY = landscape.GetComponent<DiamondSquare>().getMaxY();
-            minY = GameObject.Find("Water").transform.position.y
-             + GameObject.Find("Water").GetComponent<WaterReflection>().getOffset();
+landscapeVertices = landscape.GetComponent<MeshFilter>().mesh.vertices;
+gridSize = landscape.GetComponent<DiamondSquare>().sizeOfLandscape;
+maxY = landscape.GetComponent<DiamondSquare>().getMaxY();
+minY = GameObject.Find("Water").transform.position.y
+        + GameObject.Find("Water").GetComponent<WaterReflection>().getOffset();
 ```
 
 Every time Update is called, the camera's position before a transform is stored. After the position of the camera is updated, the camera's new position is used as a parameter in the landscape_collision function, which returns a boolean based on whether the camera has a collision. Firstly the function checks if the camera is within the bounds of the landscape.
@@ -176,23 +175,23 @@ if(newPosition.x > gridSize || newPosition.x < 0 || newPosition.z > gridSize || 
 If it's not, then the function checks if the camera is colliding with the terrain. Firstly, for the landscape vertices array, the number of vectors in one row if it were in grid form (gridLength), and the distance between each of the vectors (unitLength) is calculated. Using those variables, the position of the closest vector in the array is retrieved as closestZ and closestY. An array of the 4 closest vectors to the camera is retrieved from the vertices array.
 
 ```c#
-    // number of vectors in one row of grid
-        int gridLength = (int) Math.Sqrt(landscapeVertices.Length);
-        // distance between each vector
-        float unitLength = gridSize / (gridLength - 1);
+// number of vectors in one row of grid
+int gridLength = (int) Math.Sqrt(landscapeVertices.Length);
+// distance between each vector
+float unitLength = gridSize / (gridLength - 1);
             
-        // finds closest vector in landscape to new position 
-        int closestX = (int) (newPosition.x/unitLength);
-        int closestZ = (int) (newPosition.z/unitLength);
-        // bottomleft
+// finds closest vector in landscape to new position 
+int closestX = (int) (newPosition.x/unitLength);
+int closestZ = (int) (newPosition.z/unitLength);
+// bottomleft
             
-        // gets group of 4 vectors around closest vector
-        Vector3[] closestPositions = {
-            landscapeVertices[closestZ * gridLength + closestX], // closest point
-            landscapeVertices [closestZ * gridLength + (closestX + 1)], 
-            landscapeVertices[(closestZ + 1) * gridLength + closestX], 
-            landscapeVertices[(closestZ + 1) * gridLength + (closestX + 1)]
-        };
+// gets group of 4 vectors around closest vector
+Vector3[] closestPositions = {
+    landscapeVertices[closestZ * gridLength + closestX], // closest point
+    landscapeVertices [closestZ * gridLength + (closestX + 1)], 
+    landscapeVertices[(closestZ + 1) * gridLength + closestX], 
+    landscapeVertices[(closestZ + 1) * gridLength + (closestX + 1)]
+};
 ```
 
 Afterwards, the y value of each vector is compared to the y value of the camera, and if any y value is less than or equal to the sum of camera's y position and a threshold, the camera is colliding with the landscape and thus the function returns true. 
@@ -205,8 +204,7 @@ foreach(Vector3 position in closestPositions) {
 }
 ```
 
-If the function returns true in the update function, the position is changed back to the original position
-
+If the function returns true in the update function, the position is changed back to the original position.
 
 ## Vertex Shader :ocean:
 
