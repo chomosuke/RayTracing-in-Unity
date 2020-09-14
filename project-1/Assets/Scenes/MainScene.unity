@@ -145,7 +145,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 337916842}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 76d4f91f6d374524585b44f51bd1ec83, type: 3}
   m_Name: 
@@ -197,7 +197,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   size: 10
   landscapeObject: {fileID: 1658723779}
-  setRayTracing: 0
+  setRayTracing: 1
   lightSource: {fileID: 1490544384}
   color: {x: 0, y: 0.5, z: 1, w: 1}
   Ka: 1
@@ -271,7 +271,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.01
   far clip plane: 1000
   field of view: 60
   orthographic: 0

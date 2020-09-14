@@ -20,9 +20,6 @@ public class CameraMovement : MonoBehaviour
     {
         Vector3 previousPosition = this.gameObject.transform.position;
 
-        if (Input.GetKeyDown(KeyCode.Space)){
-            positionSet = false;
-        }
 
         GameObject landscape = GameObject.Find("Landscape");
 
@@ -40,6 +37,9 @@ public class CameraMovement : MonoBehaviour
             this.gameObject.transform.position += Vector3.up * maxY;
         }
     
+        if (Input.GetKeyDown(KeyCode.Space)){
+            positionSet = false;
+        }
     
         if (Input.GetKey(KeyCode.D)) {
             this.transform.localPosition += gameObject.transform.right * cameraSpeed * Time.deltaTime;
@@ -60,11 +60,11 @@ public class CameraMovement : MonoBehaviour
     }
 
     bool landscape_collision (Vector3 newPosition) {
-        float threshold = 0.1f;
-        
+        float waveHeight = GameObject.Find("Water").GetComponent<WaterReflection>().waveHeight;
+
         // if camera is at the edge of the map
         if(newPosition.x > gridSize || newPosition.x < 0 || newPosition.z > gridSize || newPosition.z < 0 
-             || newPosition.y > maxY + gridSize || newPosition.y <= (minY + threshold)) {
+             || newPosition.y > maxY + gridSize || newPosition.y <= (minY + waveHeight)) {
             return true;
         } else {
             // number of vectors in one row of grid
@@ -87,7 +87,7 @@ public class CameraMovement : MonoBehaviour
             };
 
             foreach(Vector3 position in closestPositions) {
-                if(newPosition.y <= (position.y + threshold)) {
+                if(newPosition.y <= (position.y)) {
                     return true;
                 }
             }
