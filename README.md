@@ -231,6 +231,7 @@ Users will be given an option to switch between different settings for the water
     uniform float fAtt;
     uniform float Ks;
     uniform float specN;
+    uniform float ambient;
 
     .
     .
@@ -238,32 +239,44 @@ Users will be given an option to switch between different settings for the water
 
     float3 normal = getNormal(v.positionObject);
 
-    // everything from this point on is in landscape space
-    normal = normalize(mul(worldToLandscape, mul(unity_ObjectToWorld, normal)));
+    float3 L = normalize(v.lightDirection);
+    float3 N = normalize(normal);
 
-    // Ambient RGB intensities passed as uniform
+    // Calculating ambient RGB intensities
+    float3 amb = Ka * ambient * color.rgb;
 
     // Calculating RGB diffuse reflections
-    float3 L = normalize(v.lightDirection);
-    float LdotN = dot(L, normal);
-    float3 diffuse = fAtt * color.rgb * Kd * saturate(LdotN);
+    float LdotN = dot(L, N);
+    LdotN = max(LdotN, 0.0);
+    float3 dif = fAtt * Kd * LdotN * color.rgb;
 
     // Calculating specular reflections
-    float3 V = v.positionLandscape - v.cameraPos;
-    float3 R = reflect(v.lightDirection, -normal);
+    float3 V = normalize(v.positionObject - v.cameraPos);
+    float3 R = normalize(reflect(v.lightDirection, -normal));
 
-    float3 specular = fAtt * color.rgb * Ks * pow(saturate(dot(V, R)), specN);
+    float specularFloat = dot(V, R);
+
+    // Taking negative number to a power causes issues 
+    if (specularFloat <= 0.0) {
+        specularFloat = 0.0;
+    } else {
+        specularFloat = fAtt * Ks * pow(specularFloat, specN);
+    }
+
+    float4 spe = {specularFloat, specularFloat, specularFloat, 0};
 
     // Combine Phong Illumination model components
+
     float4 returnColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
-    returnColor.rgb = Ka * ambient + diffuse + specular;
+    returnColor.rgb = amb + dif + spe;
     returnColor.a = color.a;
 
     return returnColor;
     
 ```
 
-The colour and parameters of the Phong illumination model for the water were all passed as uniforms into the shader, which allows users to tinker with the values in the Unity editor. Firstly, the albedo was adjusted such that when the sun is fully under the landscape (i.e. it is nighttime), the water is not too bright (the default value of 1 would lead to washed out colours). Next, the reflectivity was adjusted such that when the sun rose over the landscape, the water wasn't washed out by whiteness from the sun. Finally, the specular parameters were left as default (Ks = 1; specN = 5), as it seemed to be the best setting. Finally the colour of the water was adjusted to an acceptable shade of blue. 
+The colour and parameters of the Phong illumination model for the water were all passed as uniforms into the shader, which allows users to tinker with the values in the Unity editor. Firstly, the albedo was adjusted such that when the sun was underneath the landscape (i.e. nighttime), the water was not too brightly coloured. Next, the coefficient of diffuse reflection was adjusted such that when the sun rose over the landscape, the water wasn't diffusing too much light such that it's appearance would be overly bright and saturated. The attenuation factor was adjusted such that water that is further away from the sun had less diffuse reflection of the light, hence appearing duller. Then, the specular reflection coefficient was adjusted so that the specular component is sufficiently intense (i.e. it is not too dull/too bright). The specular power was adjusted so that the specular reflections were sufficiently sharp and not too spread out, to reproduce the slightly glossy texture of water.
+Finally, the color and transparency of the water were adjusted to make it look as realistic as possible with the Phong Illumination model.
 
 ## Bump Map :world_map:
 

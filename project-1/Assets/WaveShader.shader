@@ -5,10 +5,15 @@ Shader "Unlit/WaveShader"
 	Properties
 	{
 		_MainTex ("Texture", 2D) = "white" {}
-		_Color ("Color", Color) = (1, 1, 1, 1)
 	}
 	SubShader
 	{
+		
+		Tags{ "RenderType"="Transparent" "Queue"="Transparent"}
+
+		Blend SrcAlpha OneMinusSrcAlpha
+		ZWrite off
+
 		Pass
 		{
 
@@ -219,33 +224,42 @@ Shader "Unlit/WaveShader"
 
 				}
 				else {
-
+					
 					float3 normal = getNormal(v.positionObject);
 
-					// everything from this point on is in landscape space
-					normal = normalize(mul(worldToLandscape, mul(unity_ObjectToWorld, normal)));
+					float3 L = normalize(v.lightDirection);
+					float3 N = normalize(normal);
 		
 					// Calculating ambient RGB intensities
 					float3 amb = Ka * ambient * color.rgb;
 
 					// Calculating RGB diffuse reflections
-					float3 L = normalize(v.lightDirection);
-					float LdotN = dot(L, normal);
-					float3 diffuse = fAtt * color.rgb * Kd * saturate(LdotN);
+					float LdotN = dot(L, N);
+					LdotN = max(LdotN, 0.0);
+					float3 dif = fAtt * Kd * LdotN * color.rgb;
 
 					// Calculating specular reflections
-					float3 V = v.positionLandscape - v.cameraPos;
-					float3 R = reflect(v.lightDirection, -normal);
+					float3 V = normalize(v.positionObject - v.cameraPos);
+					float3 R = normalize(reflect(v.lightDirection, -normal));
 
-					float3 specular = fAtt * color.rgb * Ks * pow(saturate(dot(V, R)), specN);
+					float specularFloat = dot(V, R);
+
+					// Taking negative number to a power causes issues 
+					if (specularFloat <= 0.0) {
+						specularFloat = 0.0;
+					} else {
+						specularFloat = fAtt * Ks * pow(specularFloat, specN);
+					}
+
+					float4 spe = {specularFloat, specularFloat, specularFloat, 0};
 
 					// Combine Phong Illumination model components
+
 					float4 returnColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
-					returnColor.rgb = amb + diffuse + specular;
+					returnColor.rgb = amb + dif + spe;
 					returnColor.a = color.a;
 
 					return returnColor;
-
 
 				}
 			

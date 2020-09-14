@@ -13,7 +13,7 @@ public class WaterReflection : MonoBehaviour
     private MeshRenderer renderer;
     public bool setRayTracing = true;
     public GameObject lightSource;
-    public Vector4 color = new Vector4(0.0f, 0.5f, 1.0f, 1.0f);
+    public Vector4 color = new Vector4(0.0f, 0.0f, 1.0f, 1.0f);
     public float Ka = 0.3f;
     public float Kd = 0.1f;
     public float fAtt = 1.0f;

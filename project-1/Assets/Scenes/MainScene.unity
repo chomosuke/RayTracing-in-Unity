@@ -197,15 +197,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   size: 10
   landscapeObject: {fileID: 1658723779}
-  setRayTracing: 0
+  setRayTracing: 1
   lightSource: {fileID: 1490544384}
-  color: {x: 0, y: 0.5, z: 1, w: 1}
+  color: {x: 0, y: 0.5, z: 1, w: 0.6}
   Ka: 1
-  Kd: 0
-  fAtt: 1
-  Ks: 0
-  specN: 5
-  waveHeight: 0.001
+  Kd: 0.5
+  fAtt: 0.5
+  Ks: 1
+  specN: 100
+  waveHeight: 0.01
 --- !u!4 &690556181
 Transform:
   m_ObjectHideFlags: 0
