@@ -18,12 +18,15 @@
 | Name | Task | State |
 | :---         |     :---:      |          ---: |
 | Shuang Li    | Phong shader, Diamond Square, Water Shader (the one with reflection and refraction), ReadMe | Done |
-| Jasmine Bond | Camera Control, Diamond Square, ReadMe      | Done |
+| Jasmine Bond | Camera Boundaries, Diamond Square, ReadMe      | Done |
 | Ju Wey Tan   | Bump Map, Colouring, Diamond Square, ReadMe | Done |
 | Jasper Ng    | Camera Control, Water Shader, ReadMe      | Done |
 
 ## General info
 This is project - 1 where we were tasked with generating a fractal landscape in Unity using the Diamond Square Algorithm. We also had to write our own custom CG/HLSL shader for the landscape with the Phong illumination model, and a water shader, where we have included the option for ray tracing. We have also applied a bump map to the landscape mesh.
+
+## About Ray Tracing and the fact that it's resource intensive
+Considering that, we've written a Phong shader for our water. You can find a tick box in MainScene -> Water -> Water Reflection (Script) that says Set Ray Tracing. You can untick that if the RayTracing and dropping frames, or you just want to see the phong shader version of our water. Note that I've adjusted the Wave amplitude extrememly low for good reflection, so if you turn off RayTracing it's recommended for you to set water heigh to 0.01 as well.
 	
 ## Technologies
 Project is created with:
@@ -151,7 +154,7 @@ if (Input.GetKey(KeyCode.D)) {
 
 Users are given the option of the changing the sensitivity and speed of the camera to their preference. Furthermore, if the user presses "SPACE", and there is a pre-existing landscape, the program will generate a new landscape and reset the camera position to a suitable position.
 
-#### Landscape Boundaries :construction:
+## Landscape Boundaries :construction:
 
 For the boundaries of the landscape, we chose to have it controlled by the CameraMovement script. Every time the landscape is generated, the script retrieves the landscape mesh's vertices, and maxY from the DiamondSquare script. It also retrieves minY by obtaining the sum of the position of the 'Water' object, and the offset from the WaterReflection script.
 
@@ -289,10 +292,5 @@ This was done by getting the normal and tangent of the vertex, and translating t
 
 Then, in the fragment shader, we got the normal from the bump map and performed a dot multiplication with the matrix to transform the normal from tangent to world space.
 
-**Now Get ready to complete all the tasks:**
-
-- [x] Read the handout for Project-1 carefully
-- [x] Modelling of fractal landscape
-- [x] Camera motion 
-- [x] Surface properties
-- [x] Project organisation and documentation
+## Landscape and it's parameters :mountain:
+We set landscape's specular fraction (Ks) to 0.032 because a mountain is not shiny as all and there really shouldn't be any specular fraction. We set landscape's Ambient fraction (Ka) to 0.15 because we feel like that's a suitable number, any lower and it'll look like we're on the moon (shadow being completely black) and any higher
