@@ -296,4 +296,4 @@ This was done by getting the normal and tangent of the vertex, and translating t
 Then, in the fragment shader, we got the normal from the bump map and performed a dot multiplication with the matrix to transform the normal from tangent to world space.
 
 ## Landscape's phong shader's parameters :mountain:
-We set the landscape's specular fraction (Ks) to 0.032 because a mountain is not shiny at all and there really shouldn't be any specular fraction. We set the landscape's ambient fraction (Ka) to 0.15 because we feel like that is a suitable number, any lower and it will look like we are on the moon (shadow being completely black) and any higher
+We set the landscape's specular fraction (Ks) to 0.032 because a mountain is not shiny at all and there really shouldn't be any specular fraction. We set the landscape's ambient fraction (Ka) to 0.15 because we feel like that is a suitable number, any lower and it will look like we are on the moon (shadow being completely black) and any higher would cause it to look unrealistic, like a cartoon (no realistic shadows).
