@@ -26,8 +26,8 @@
 This is project - 1 where we were tasked with generating a fractal landscape in Unity using the Diamond Square Algorithm. We also had to write our own custom CG/HLSL shader for the landscape with the Phong illumination model, and a water shader, where we have included the option for ray tracing. We have also applied a bump map to the landscape mesh.
 
 ## About Ray Tracing and the fact that it's resource intensive
-Considering that, we've written a Phong shader for our water. You can find a tick box in MainScene -> Water -> Water Reflection (Script) that says Set Ray Tracing. You can untick that if the RayTracing and dropping frames, or you just want to see the phong shader version of our water. Note that I've adjusted the Wave amplitude extrememly low for good reflection, so if you turn off RayTracing it's recommended for you to set water heigh to 0.01 as well.
-	
+Considering that we've written a Phong shader for our water, you can find a tick box in MainScene -> Water -> Water Reflection (Script) that says Set Ray Tracing. You can untick that if the RayTracing causes a drop in frame rate, or you just want to see the phong shader version of our water. Note that I've adjusted the Wave amplitude extrememly low for good reflection, so if you turn off RayTracing it's recommended for you to set water height to 0.01 as well. Additionally, the number of iterations in the Diamond-Square Algorithm was set to 6 to accommodate the low frame rate expected with the Ray Tracing turned on. Therefore, to see the frame rate maintained without ray tracing, increase the iterations to 8.
+
 ## Technologies
 Project is created with:
 * Unity 2019.4.3f1
@@ -124,7 +124,7 @@ public class meshGenerator : MonoBehaviour
 ```
 
 #### Turning the 2D height map array into a mesh
-We first initialize a array of vectors with the same size as the height map array and iteratively fill the array with vectors with y component from the height map and x and z component derieved for the first and second index of the 2D array scaled appropirately to match the landscape size specified in the editor. We then set the triangles' index to match each of the vector's corrisponding position in the 2D height map array so that when looking from top down the triangles form a grid. After that we assign everything to a mesh and because our triangles share vertices we can use unity's built in RecalculateNormals() and RecalculateTangents() to automatically fill in the normals and tangents for the mesh.
+We first initialize an array of vectors with the same size as the height map array and iteratively fill the array with vectors with y component from the height map. The x and z components are derived from the first and second index of the 2D array scaled appropriately to match the landscape size specified in the editor. We then set the triangles' index to match each of the vector's corresponding position in the 2D height map array so that when looking from top down, the triangles form a grid. After that, we assign everything to a mesh and as our triangles share vertices we can use unity's built in RecalculateNormals() and RecalculateTangents() to automatically fill in the normals and tangents for the mesh.
 
 ## Camera Motion :movie_camera:
 To control the orientation of the camera, we simply read user inputs and converted them to a rotation in the camera using the Quaternion struct in Unity. 
@@ -169,7 +169,7 @@ minY = GameObject.Find("Water").transform.position.y
         + GameObject.Find("Water").GetComponent<WaterReflection>().getOffset();
 ```
 
-Every time Update is called, the camera's position before a transform is stored. After the position of the camera is updated, the camera's new position is used as a parameter in the landscape_collision function, which returns a boolean based on whether the camera has a collision. Firstly the function checks if the camera is within the bounds of the landscape.
+Every time Update is called, the camera's position before a transform is stored. After the position of the camera is updated, the camera's new position is used as a parameter in the landscape_collision function, which returns a boolean based on whether the camera has a collision. Firstly, the function checks if the camera is within the bounds of the landscape.
 
 ```c#
 if(newPosition.x > gridSize || newPosition.x < 0 || newPosition.z > gridSize || newPosition.z < 0 
@@ -214,7 +214,7 @@ If the function returns true in the update function, the position is changed bac
 
 ## Vertex Shader :ocean:
 
-I imagine that in the real world, there will be many waves traveling in random directions where each of them have a different amplitude and wave length. 
+I imagine that in the real world, there will be many waves traveling in random directions where each of them has a different amplitude and wave length. 
 To simulate this, I had 64 seeds acting as the origin of the waves evenly spread across the water surface. 
 
 From each origin there are 4 waves constantly going outwards with an amplitude of 5, 1, 0.2, 0.04 and wavelength of 0.5, 0.1, 0.02, 0.004. 
@@ -225,9 +225,9 @@ After I tried that I realized that the waves were too strong, and the reflection
 
 Ok so it's not recursive ray tracing. After the reflection and refraction from the water I used vertex and fragment shaders copied from PhongShader.shader (with slight modification) to render the color for the pixel (using data passing into waveshader as uniforms). 
 
-The reason I was able to do ray tracing for this landscape is the fact that if you look directly from the top in isotropic view you'll realize that the wireframe of the landscape forms a grid. This makes sense because of the way the diamondsquare algorithm works. Therefore to check which triangle each ray hits, we do not have to iterate through all of the triangles for the landscape, but only the one directly above or below it (i.e. the ones it goes through ignoring the y axis). This reduces the time complexity from O(n) to O(sqrt(n)) (n being the number of triangles in the landscape). 
+The reason I was able to do ray tracing for this landscape is the fact that if you look directly from the top in isotropic view, you'll realize that the wireframe of the landscape forms a grid. This makes sense because of the way the diamondsquare algorithm works. Therefore to check which triangle each ray hits, we do not have to iterate through all of the triangles for the landscape, but only the one directly above or below it (i.e. the ones it goes through ignoring the y axis). This reduces the time complexity from O(n) to O(sqrt(n)) (n being the number of triangles in the landscape). 
 
-When iterating through everything above and below the ray, I did it on a per square basis instead of per triangle. This is because most of the time if the ray goes through one of the triangle that form the square, it'll go through the other one as well and also frankly I just couldn't be bothered... 
+When iterating through everything above and below the ray, I did it on a per square basis instead of per triangle. This is because most of the time if the ray goes through one of the triangles that form the square, it'll go through the other one as well and also frankly I just couldn't be bothered... 
 
 I found a C++ implementation of the Moller-Trumbore intersection (apparently that's the best one we have) on wikipedia at https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm and I ported it to HLSL.
 
@@ -296,4 +296,4 @@ This was done by getting the normal and tangent of the vertex, and translating t
 Then, in the fragment shader, we got the normal from the bump map and performed a dot multiplication with the matrix to transform the normal from tangent to world space.
 
 ## Landscape's phong shader's parameters :mountain:
-We set landscape's specular fraction (Ks) to 0.032 because a mountain is not shiny as all and there really shouldn't be any specular fraction. We set landscape's Ambient fraction (Ka) to 0.15 because we feel like that's a suitable number, any lower and it'll look like we're on the moon (shadow being completely black) and any higher
+We set the landscape's specular fraction (Ks) to 0.032 because a mountain is not shiny at all and there really shouldn't be any specular fraction. We set the landscape's ambient fraction (Ka) to 0.15 because we feel like that is a suitable number, any lower and it will look like we are on the moon (shadow being completely black) and any higher
