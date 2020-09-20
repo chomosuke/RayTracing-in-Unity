@@ -34,7 +34,7 @@ Project is created with:
 
 ## Diamond-Square implementation :mountain:
 
-We generated the height map for the fractal landscape using a 2D float array with a size that can be defined in the unity inspector and initialised the four corners. Then, we iteratively performed the diamond step and the square step until the 2D array was filled.
+We generated the height map for the fractal landscape using a 2D float array (the height map) with a size that can be defined in the unity inspector and initialised the four corners. Then, we iteratively performed the diamond step and the square step until the 2D array was filled.
 
 #### Diamond step :large_blue_diamond:
 For each existing top-left point, tracked by the current length between each point in the array, we got the other three points that formed a square to get the average of their heights as the height of the point at the middle of four points plus a random value.
@@ -122,6 +122,9 @@ public class meshGenerator : MonoBehaviour
     }
 }
 ```
+
+#### Turning the 2D height map array into a mesh
+We first initialize a array of vectors with the same size as the height map array and iteratively fill the array with vectors with y component from the height map and x and z component derieved for the first and second index of the 2D array scaled appropirately to match the landscape size specified in the editor. We then set the triangles' index to match each of the vector's corrisponding position in the 2D height map array so that when looking from top down the triangles form a grid. After that we assign everything to a mesh and because our triangles share vertices we can use unity's built in RecalculateNormals() and RecalculateTangents() to automatically fill in the normals and tangents for the mesh.
 
 ## Camera Motion :movie_camera:
 To control the orientation of the camera, we simply read user inputs and converted them to a rotation in the camera using the Quaternion struct in Unity. 
@@ -292,5 +295,5 @@ This was done by getting the normal and tangent of the vertex, and translating t
 
 Then, in the fragment shader, we got the normal from the bump map and performed a dot multiplication with the matrix to transform the normal from tangent to world space.
 
-## Landscape and it's parameters :mountain:
+## Landscape's phong shader's parameters :mountain:
 We set landscape's specular fraction (Ks) to 0.032 because a mountain is not shiny as all and there really shouldn't be any specular fraction. We set landscape's Ambient fraction (Ka) to 0.15 because we feel like that's a suitable number, any lower and it'll look like we're on the moon (shadow being completely black) and any higher
