@@ -7,7 +7,7 @@ public class CameraControl : MonoBehaviour
 
     public float sensitivity = 2.0f;
 
-    public Quaternion camRotation;
+    public Vector3 camRotation = new Vector3();
 
     // Update is called once per frame
     void Update()

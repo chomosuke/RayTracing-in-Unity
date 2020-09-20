@@ -14,6 +14,8 @@ public class CameraMovement : MonoBehaviour
     private float minY;
     private float gridSize;
 
+    public CameraControl cameraControl;
+
 
     // Update is called once per frame
     void Update()
@@ -32,8 +34,9 @@ public class CameraMovement : MonoBehaviour
              + GameObject.Find("Water").GetComponent<WaterReflection>().getOffset();
         
 
-            this.gameObject.transform.position = landscapeVertices[landscapeVertices.Length/2];
+            this.gameObject.transform.position = landscapeVertices[0];
             this.gameObject.transform.position += Vector3.up * maxY;
+            cameraControl.camRotation = new Vector3(25, 45, 0);
         }
 
         if (Input.GetKeyDown(KeyCode.Space)){
